@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://chewbackk-studio.evanbouvier.fr/sitemap-index.xml

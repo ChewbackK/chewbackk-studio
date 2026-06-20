@@ -1,0 +1,65 @@
+---
+// Page d'accueil — placeholder de la tranche 1 (scaffold + déploiement).
+// Le design final arrive en tranche 3, une fois la DA validée.
+const title = 'Chewbackk Studio — Création de sites web';
+const description =
+  'Chewbackk Studio — création et maintenance de sites web. Un site qui travaille pour vous.';
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="canonical" href="https://chewbackk-studio.evanbouvier.fr/" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <main>
+      <p class="eyebrow">Chewbackk Studio</p>
+      <h1>Bientôt en ligne.</h1>
+      <p class="lead">
+        Création et maintenance de sites web. Le site arrive très vite.
+      </p>
+    </main>
+
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        display: grid;
+        place-items: center;
+        padding: 2rem;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f7f6f3;
+        color: #1a1a1a;
+        text-align: center;
+      }
+      .eyebrow {
+        margin: 0 0 1rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #6b6b6b;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .lead {
+        margin: 1.25rem auto 0;
+        max-width: 32ch;
+        font-size: 1.1rem;
+        color: #4a4a4a;
+      }
+    </style>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+# Déploiement Netlify — site Astro (build statique).
+# Astro 6 exige Node 22+.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# En-têtes de sécurité de base (ajustables ensuite).
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    X-Frame-Options = "SAMEORIGIN"
