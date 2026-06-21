@@ -1,5 +1,5 @@
 /**
- * hero-intro.ts — animation d'entrée du hero (typo XXL « Chewbackk »).
+ * hero-intro.ts - animation d'entrée du hero (typo XXL « Chewbackk »).
  *
  * Chorégraphie : les lignes du nom montent depuis un masque (overflow caché),
  * le dernier « k » (signature) se verrouille en dernier avec un léger snap,
@@ -48,6 +48,9 @@ function init(): void {
     gsap.set(lines, { yPercent: 0 });
     if (sigK) gsap.set(sigK, { opacity: 1, scale: 1 });
     gsap.set(fades, { opacity: 1, y: 0 });
+    // Anim terminée d'emblée → on lève les masques (sinon ils clipent la
+    // lueur du k au survol).
+    root.classList.add("is-done");
     return;
   }
 
@@ -58,6 +61,11 @@ function init(): void {
 
   tl = gsap.timeline({
     defaults: { ease: "power4.out" },
+    onComplete: () => {
+      // Une fois en place, on retire les masques de ligne pour que la lueur
+      // du k au survol ne soit pas rognée (bord net disgracieux).
+      root.classList.add("is-done");
+    },
   });
 
   tl.to(lines, {

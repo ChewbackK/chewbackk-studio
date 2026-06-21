@@ -1,5 +1,5 @@
 /**
- * smooth-scroll.ts — cycle de vie du smooth-scroll (Lenis) et des reveals (GSAP).
+ * smooth-scroll.ts - cycle de vie du smooth-scroll (Lenis) et des reveals (GSAP).
  *
  * Contraintes Astro 6 + ClientRouter :
  *  - Un <script> hoisté ne se rejoue PAS après une navigation client. On

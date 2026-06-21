@@ -1,4 +1,4 @@
-/* globals.css — reset léger, styles de base, @font-face, accessibilité.
+/* globals.css - reset léger, styles de base, @font-face, accessibilité.
    Importe tokens.css en amont (fait dans le layout). */
 
 /* ---- Webfont d'affichage (self-hostée, subset Latin+FR ~18 Ko) ---- */

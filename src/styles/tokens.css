@@ -1,4 +1,4 @@
-/* tokens.css — variables de design de Chewbackk Studio.
+/* tokens.css - variables de design de Chewbackk Studio.
    Direction : noir & blanc + UN seul accent vif. Quasi-monochrome, premium,
    intemporel. Tous les couples texte/fond passent WCAG AA (contrastes vérifiés
    en commentaire). Thème sombre unique pour l'instant. */
@@ -7,16 +7,16 @@
   /* ---- Accent (couleur unique de la marque) ----
      Réservé au k signature, aux liens, et au fond des CTA. Un seul point de
      vérité : changer ces 2 lignes suffit à reteinter tout le site. */
-  --c-accent: #c6f24e;        /* vert acide — 15.3:1 /bg */
+  --c-accent: #c6f24e;        /* vert acide - 15.3:1 /bg */
   --c-accent-rgb: 198, 242, 78;
 
   /* ---- Neutres ---- */
   --c-bg: #0a0a0a;            /* fond page (noir profond) */
   --c-bg-elev: #141414;       /* surfaces élevées / cartes */
-  --c-ink: #f4f2ee;           /* texte principal (blanc cassé chaud) — 17.7:1 /bg */
-  --c-ink-muted: #a8a6a1;     /* texte secondaire — ~8.7:1 /bg */
+  --c-ink: #f4f2ee;           /* texte principal (blanc cassé chaud) - 17.7:1 /bg */
+  --c-ink-muted: #a8a6a1;     /* texte secondaire - ~8.7:1 /bg */
   --c-line: #2a2a2a;          /* bordures / filets */
-  --c-accent-ink: #0a0a0a;    /* texte sur fond accent (CTA) — ≥6.4:1 selon accent */
+  --c-accent-ink: #0a0a0a;    /* texte sur fond accent (CTA) - ≥6.4:1 selon accent */
   --c-focus: var(--c-accent); /* anneau focus-visible = l'accent */
 
   --c-bg-rgb: 10, 10, 10;
@@ -26,6 +26,9 @@
   --font-display: "Space Grotesk", system-ui, sans-serif; /* titres */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
     sans-serif; /* corps */
+  /* Mono : contraste typographique (ex. le mot « Studio » du hero). */
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Fira Code",
+    "JetBrains Mono", Menlo, Consolas, monospace;
 
   /* Échelle fluide. Les min tiennent à 320px sans débordement. */
   --fs-step--1: 0.833rem; /* mentions légales / notes */

@@ -1,5 +1,5 @@
 /**
- * motion.ts — utilitaires de mouvement partagés.
+ * motion.ts - utilitaires de mouvement partagés.
  * Source de vérité unique pour la préférence « réduire les animations »,
  * honorée séparément par Lenis (smooth-scroll), le canvas et les reveals GSAP.
  */
