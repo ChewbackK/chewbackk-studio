@@ -1,0 +1,64 @@
+/* effects.css — classes visuelles et d'animation réutilisables.
+   Le style propre à un composant vit dans son <style> scoped ; ici ne restent
+   que des effets partagés entre plusieurs endroits. */
+
+/* ---- Reveal au scroll ----
+   État initial posé en CSS ; GSAP/ScrollTrigger anime vers l'état final.
+   En reduced-motion, globals.css force l'état final (pas de flash). */
+.reveal {
+  opacity: 0;
+  transform: translateY(1.5rem);
+  will-change: opacity, transform;
+}
+
+/* ---- Fond dégradé "studio" ----
+   Sert de fallback no-JS pour le canvas du hero : jamais une boîte vide. */
+.bg-gradient {
+  background-color: var(--c-bg);
+  background-image:
+    radial-gradient(
+      60% 50% at 18% 12%,
+      rgba(var(--c-accent-rgb), 0.22) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      55% 45% at 85% 18%,
+      rgba(var(--c-accent-rgb), 0.12) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      90% 70% at 50% 110%,
+      rgba(var(--c-accent-rgb), 0.16) 0%,
+      transparent 75%
+    );
+}
+
+/* ---- Grain léger ----
+   Texture subtile via un SVG inline (pas de requête réseau). Décoratif. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* ---- Lueur diffuse réutilisable (halo derrière un élément) ---- */
+.glow {
+  position: relative;
+}
+.glow::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    rgba(var(--c-accent-rgb), 0.35),
+    transparent
+  );
+  filter: blur(40px);
+  pointer-events: none;
+}

@@ -1,0 +1,128 @@
+---
+/**
+ * Navbar.astro — chrome de navigation (stub pour la tranche 1).
+ * `transition:persist` : la barre n'est pas re-rendue/animée entre les
+ * navigations ClientRouter. Le skip-link cible le <main> du layout (#contenu).
+ */
+const links = [
+  { href: "/services", label: "Services" },
+  { href: "/realisations", label: "Réalisations" },
+  { href: "/contact", label: "Contact" },
+];
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path.startsWith(href);
+---
+
+<a class="skip-link" href="#contenu">Aller au contenu</a>
+
+<header class="nav" transition:persist>
+  <div class="container nav__inner">
+    <a class="nav__brand" href="/" aria-label="Chewbackk Studio — accueil">
+      Chewbackk<span class="nav__brand-accent">.</span>
+    </a>
+
+    <nav aria-label="Navigation principale">
+      <ul class="nav__list">
+        {
+          links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <a class="nav__cta" href="/contact">Démarrer un projet</a>
+  </div>
+</header>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-nav);
+    background: rgba(var(--c-bg-rgb), 0.72);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .nav__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-6);
+    min-height: 4rem;
+  }
+
+  .nav__brand {
+    font-family: var(--font-display);
+    font-size: var(--fs-step-1);
+    color: var(--c-ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .nav__brand-accent {
+    color: var(--c-accent);
+  }
+
+  .nav__list {
+    display: flex;
+    gap: var(--sp-6);
+    list-style: none;
+    padding: 0;
+  }
+
+  .nav__list a {
+    color: var(--c-ink-muted);
+    text-decoration: none;
+    font-size: var(--fs-step-0);
+  }
+  .nav__list a:hover,
+  .nav__list a[aria-current="page"] {
+    color: var(--c-ink);
+  }
+
+  .nav__cta {
+    margin-left: auto;
+    padding: var(--sp-2) var(--sp-4);
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+    border-radius: var(--r-pill);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+  .nav__cta:hover {
+    color: var(--c-accent-ink);
+    transform: translateY(-1px);
+  }
+
+  /* Sous 640px : on masque les liens centraux (menu complet = tranche future),
+     on garde marque + CTA. Le footer expose toute la navigation entre-temps. */
+  @media (max-width: 640px) {
+    .nav__list {
+      display: none;
+    }
+    .nav__cta {
+      padding: var(--sp-2) var(--sp-3);
+    }
+  }
+
+  /* À 320px, on resserre encore pour éviter tout débordement. */
+  @media (max-width: 360px) {
+    .nav__inner {
+      gap: var(--sp-3);
+    }
+    .nav__cta {
+      font-size: var(--fs-step--1);
+    }
+  }
+</style>
