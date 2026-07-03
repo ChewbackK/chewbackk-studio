@@ -1,0 +1,205 @@
+---
+/**
+ * ServicesPreview.astro - aperçu des services en grande liste typographique
+ * (style sommaire), révélée au scroll. Chaque ligne renvoie vers /services.
+ * Pas de jargon : descriptions parlantes pour un public non technique.
+ */
+const services = [
+  {
+    num: "01",
+    titre: "Sites web",
+    desc: "Vitrine, landing page, portfolio, ou site avec espace client et réservation.",
+  },
+  {
+    num: "02",
+    titre: "Développement & automatisation",
+    desc: "Applications web, scripts, bots et intégrations qui font gagner du temps.",
+  },
+  {
+    num: "03",
+    titre: "Discord",
+    desc: "Configuration de serveur et bots sur mesure pour votre communauté.",
+  },
+  {
+    num: "04",
+    titre: "Autres projets",
+    desc: "Une idée qui ne rentre dans aucune case ? On en discute, sur devis.",
+  },
+];
+---
+
+<section class="services">
+  <div class="container">
+    <header class="services__head reveal">
+      <p class="services__eyebrow">Ce que je fais</p>
+      <h2 class="services__title">Des services à la carte</h2>
+    </header>
+
+    <ul class="services__list">
+      {
+        services.map((s) => (
+          <li class="services__item reveal">
+            <a class="services__link" href="/services">
+              <span class="services__num">{s.num}</span>
+              <span class="services__name">{s.titre}</span>
+              <span class="services__desc">{s.desc}</span>
+              <span class="services__arrow" aria-hidden="true">&rarr;</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="services__cta reveal">
+      <a class="btn btn--cta" href="/contact">Démarrer un projet</a>
+      <a class="btn btn--ghost" href="/services">Voir tous les services</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .services {
+    padding-block: var(--section-pad);
+  }
+
+  .services__head {
+    margin-bottom: var(--sp-12);
+  }
+  .services__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: var(--fs-step--1);
+    color: var(--c-accent);
+    margin-bottom: var(--sp-4);
+  }
+  .services__title {
+    font-size: clamp(2rem, 1.4rem + 3vw, 3.6rem);
+    margin: 0;
+  }
+
+  .services__list {
+    list-style: none;
+    padding: 0;
+    border-top: 1px solid var(--c-line);
+  }
+
+  .services__link {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "num name arrow"
+      "num desc arrow";
+    align-items: center;
+    gap: 0 var(--sp-6);
+    padding-block: clamp(var(--sp-6), 3vw, var(--sp-12));
+    border-bottom: 1px solid var(--c-line);
+    text-decoration: none;
+    color: var(--c-ink);
+    transition:
+      padding-left var(--dur) var(--ease-out),
+      color var(--dur-fast) var(--ease-out);
+  }
+
+  .services__num {
+    grid-area: num;
+    font-family: var(--font-mono);
+    font-size: var(--fs-step-0);
+    color: var(--c-ink-muted);
+    transition: color var(--dur-fast) var(--ease-out);
+  }
+
+  .services__name {
+    grid-area: name;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 1.2rem + 3vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: var(--tracking-tight);
+  }
+
+  .services__desc {
+    grid-area: desc;
+    margin-top: var(--sp-2);
+    font-size: var(--fs-step-0);
+    color: var(--c-ink-muted);
+    max-width: 48ch;
+  }
+
+  .services__arrow {
+    grid-area: arrow;
+    font-size: var(--fs-step-2);
+    color: var(--c-accent);
+    opacity: 0;
+    transform: translateX(-0.5rem);
+    transition:
+      opacity var(--dur) var(--ease-out),
+      transform var(--dur) var(--ease-out);
+  }
+
+  /* Survol : la ligne se décale, le numéro et le nom passent à l'accent,
+     la flèche apparaît. Effet "sommaire vivant". */
+  .services__link:hover {
+    padding-left: var(--sp-4);
+    color: var(--c-accent);
+  }
+  .services__link:hover .services__num {
+    color: var(--c-accent);
+  }
+  .services__link:hover .services__arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .services__cta {
+    margin-top: var(--sp-12);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+
+  /* Boutons (mêmes styles que le hero, locaux à la section). */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-pill);
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn--cta {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn--cta:hover {
+    color: var(--c-accent-ink);
+    box-shadow: 0 10px 30px -8px rgba(var(--c-accent-rgb), 0.5);
+  }
+  .btn--ghost {
+    border: 1px solid var(--c-line);
+    color: var(--c-ink);
+  }
+  .btn--ghost:hover {
+    color: var(--c-ink);
+    border-color: var(--c-accent);
+    background: rgba(var(--c-accent-rgb), 0.08);
+  }
+
+  /* Mobile : la flèche reste visible (pas de hover), numéro au-dessus. */
+  @media (max-width: 600px) {
+    .services__arrow {
+      opacity: 0.6;
+      transform: none;
+    }
+    .services__desc {
+      max-width: none;
+    }
+  }
+</style>
