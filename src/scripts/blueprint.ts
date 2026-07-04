@@ -1,31 +1,27 @@
 /**
- * blueprint.ts - direction « Blueprint » du hero.
+ * blueprint.ts - direction « Blueprint vivant ».
  *
- * Trois rôles :
- *  1. Entrée : le nom se compose glyphe par glyphe (le dernier « k », la
- *     signature, se verrouille en dernier), la grille ambiante se révèle, le
- *     cartouche et les CTA se tamponnent. Une seule timeline, chaînée.
- *  2. Le PLAN : un calque SVG rempli à partir des cotes RÉELLES du hero
- *     (getBoundingClientRect) : largeur/hauteur du titre en px, grille,
- *     repères aux coins, annotations mono. Reconstruit au resize et une fois
- *     les polices chargées (les mesures en dépendent).
- *  3. Le bouton « Voir le plan » : révèle tout le plan pour le clavier et le
- *     tactile (là où la lampe curseur n'existe pas).
+ * Le plan technique est PERMANENT (couche base toujours visible) et VIVANT :
+ *  - À l'entrée, le plan se dessine (balayage --bp-draw) pendant que la grille
+ *    se révèle, puis le nom se compose glyphe par glyphe.
+ *  - La couche « chaude » (détail fin) est révélée par la lampe (lamp.ts).
+ *  - Une cote suit le scroll : elle mesure la position réelle du titre en direct
+ *    et l'affiche (l'instrument de mesure vivant).
  *
- * Contraintes projet : idempotent sur `astro:page-load`, teardown d'abord.
- * reduced-motion → tout est posé à l'état final, aucune timeline, aucun rAF.
- * Le calque plan est aria-hidden ; le <h1> garde le nom complet et son contraste.
+ * Toutes les cotes viennent de mesures DOM réelles, recalculées au resize.
+ * Idempotent sur `astro:page-load`, teardown d'abord. reduced-motion : tout est
+ * posé à l'état final, aucun balayage, aucune boucle rAF.
  */
 import gsap from "gsap";
 import { prefersReducedMotion } from "./motion";
 
 let tl: gsap.core.Timeline | null = null;
 let resizeRaf = 0;
+let scrollRaf = 0;
 let onResize: (() => void) | null = null;
-let onToggle: (() => void) | null = null;
-let toggleBtn: HTMLElement | null = null;
+let onScroll: (() => void) | null = null;
 
-/** Enveloppe chaque glyphe du mot dans un span (clip + char). Idempotent. */
+/** Enveloppe chaque glyphe du mot (clip + char). Idempotent via data-text. */
 function splitWord(word: HTMLElement): HTMLElement[] {
   const text = word.dataset.text ?? word.textContent ?? "";
   word.dataset.text = text;
@@ -46,20 +42,22 @@ function splitWord(word: HTMLElement): HTMLElement[] {
   return chars;
 }
 
-/** Lit une couleur token (ex. --c-accent-rgb → "198, 242, 78"). */
 function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
 type Box = { x: number; y: number; w: number; h: number };
-
 function relBox(el: Element, origin: DOMRect): Box {
   const r = el.getBoundingClientRect();
   return { x: r.left - origin.left, y: r.top - origin.top, w: r.width, h: r.height };
 }
 
-/** Construit le SVG du plan à partir des mesures réelles du hero. */
-function buildPlan(hero: HTMLElement, svg: SVGSVGElement): void {
+/** Construit les deux couches du plan (base + chaud) à partir des mesures. */
+function buildPlan(
+  hero: HTMLElement,
+  baseSvg: SVGSVGElement,
+  hotSvg: SVGSVGElement,
+): void {
   const origin = hero.getBoundingClientRect();
   const W = Math.round(origin.width);
   const H = Math.round(origin.height);
@@ -67,9 +65,8 @@ function buildPlan(hero: HTMLElement, svg: SVGSVGElement): void {
 
   const rgb = cssVar("--c-accent-rgb") || "198, 242, 78";
   const accentHex = (cssVar("--c-accent") || "#c6f24e").toUpperCase();
-  const line = `rgba(${rgb}, 0.55)`;
-  const faint = `rgba(${rgb}, 0.16)`;
-  const ink = `rgba(${rgb}, 0.9)`;
+  const bg = cssVar("--c-bg") || "#0a0a0a";
+  const a = (alpha: number): string => `rgba(${rgb}, ${alpha})`;
   const cellPx =
     parseFloat(getComputedStyle(hero).getPropertyValue("--bp-cell")) *
       parseFloat(getComputedStyle(document.documentElement).fontSize) || 80;
@@ -87,93 +84,102 @@ function buildPlan(hero: HTMLElement, svg: SVGSVGElement): void {
     x: number,
     y: number,
     str: string,
-    opts: { size?: number; fill?: string; anchor?: string } = {},
+    o: { size?: number; fill?: string; anchor?: string } = {},
   ): string =>
     `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" ` +
-    `style="font-family:'Martian Mono',monospace;font-size:${opts.size ?? 12}px;` +
-    `letter-spacing:0.04em;fill:${opts.fill ?? ink};text-anchor:${opts.anchor ?? "start"}">` +
+    `style="font-family:'Martian Mono',monospace;font-size:${o.size ?? 12}px;` +
+    `letter-spacing:0.04em;fill:${o.fill ?? a(0.85)};text-anchor:${o.anchor ?? "start"}">` +
     `${str.toUpperCase()}</text>`;
 
-  const parts: string[] = [];
-
-  // 1. Grille (mêmes mailles que la grille ambiante) : repères de construction.
+  // ---- Couche BASE (toujours visible, calme) ----
+  const base: string[] = [];
   const grid: string[] = [];
-  for (let x = cellPx; x < W; x += cellPx)
-    grid.push(`M${x.toFixed(0)} 0V${H}`);
-  for (let y = cellPx; y < H; y += cellPx)
-    grid.push(`M0 ${y.toFixed(0)}H${W}`);
-  parts.push(`<path d="${grid.join("")}" stroke="${faint}" stroke-width="1" fill="none"/>`);
-
-  // 2. Cadre du titre + repères aux 4 coins.
-  parts.push(
-    `<rect x="${t.x.toFixed(1)}" y="${t.y.toFixed(1)}" width="${t.w.toFixed(1)}" height="${t.h.toFixed(1)}" fill="none" stroke="${line}" stroke-width="1" stroke-dasharray="2 4"/>`,
+  for (let x = cellPx; x < W; x += cellPx) grid.push(`M${x.toFixed(0)} 0V${H}`);
+  for (let y = cellPx; y < H; y += cellPx) grid.push(`M0 ${y.toFixed(0)}H${W}`);
+  base.push(`<path d="${grid.join("")}" stroke="${a(0.08)}" stroke-width="1" fill="none"/>`);
+  base.push(
+    `<rect x="${t.x.toFixed(1)}" y="${t.y.toFixed(1)}" width="${t.w.toFixed(1)}" height="${t.h.toFixed(1)}" fill="none" stroke="${a(0.26)}" stroke-width="1" stroke-dasharray="2 4"/>`,
   );
-  const cross = (cx: number, cy: number): string =>
-    `<path d="M${(cx - 7).toFixed(1)} ${cy.toFixed(1)}h14 M${cx.toFixed(1)} ${(cy - 7).toFixed(1)}v14" stroke="${line}" stroke-width="1.5"/>`;
-  parts.push(cross(t.x, t.y), cross(t.x + t.w, t.y), cross(t.x, t.y + t.h), cross(t.x + t.w, t.y + t.h));
-
-  // 3. Cote horizontale (largeur réelle du titre).
+  const cross = (cx: number, cy: number, col: string): string =>
+    `<path d="M${(cx - 7).toFixed(1)} ${cy.toFixed(1)}h14 M${cx.toFixed(1)} ${(cy - 7).toFixed(1)}v14" stroke="${col}" stroke-width="1.5"/>`;
+  base.push(
+    cross(t.x, t.y, a(0.4)),
+    cross(t.x + t.w, t.y, a(0.4)),
+    cross(t.x, t.y + t.h, a(0.4)),
+    cross(t.x + t.w, t.y + t.h, a(0.4)),
+  );
+  // Cote de largeur (base).
   const dyW = t.y + t.h + 22;
-  parts.push(
-    `<path d="M${t.x.toFixed(1)} ${dyW}h${t.w.toFixed(1)} M${t.x.toFixed(1)} ${(dyW - 5).toFixed(1)}v10 M${(t.x + t.w).toFixed(1)} ${(dyW - 5).toFixed(1)}v10" stroke="${line}" stroke-width="1"/>`,
+  base.push(
+    `<path d="M${t.x.toFixed(1)} ${dyW}h${t.w.toFixed(1)} M${t.x.toFixed(1)} ${(dyW - 5).toFixed(1)}v10 M${(t.x + t.w).toFixed(1)} ${(dyW - 5).toFixed(1)}v10" stroke="${a(0.32)}" stroke-width="1"/>`,
+    `<rect x="${(t.x + t.w / 2 - 34).toFixed(1)}" y="${(dyW - 10).toFixed(1)}" width="68" height="18" fill="${bg}"/>`,
+    mono(t.x + t.w / 2, dyW + 4, `${Math.round(t.w)} px`, { anchor: "middle", fill: a(0.55) }),
   );
-  parts.push(
-    `<rect x="${(t.x + t.w / 2 - 34).toFixed(1)} " y="${(dyW - 10).toFixed(1)}" width="68" height="18" fill="${cssVar("--c-bg") || "#0a0a0a"}"/>`,
-    mono(t.x + t.w / 2, dyW + 4, `${Math.round(t.w)} px`, { anchor: "middle", size: 12 }),
-  );
-
-  // 4. Cote verticale (hauteur réelle du titre).
-  const dxH = t.x - 22;
-  parts.push(
-    `<path d="M${dxH.toFixed(1)} ${t.y.toFixed(1)}v${t.h.toFixed(1)} M${(dxH - 5).toFixed(1)} ${t.y.toFixed(1)}h10 M${(dxH - 5).toFixed(1)} ${(t.y + t.h).toFixed(1)}h10" stroke="${line}" stroke-width="1"/>`,
-    `<g transform="translate(${(dxH - 8).toFixed(1)} ${(t.y + t.h / 2).toFixed(1)}) rotate(-90)">${mono(0, 0, `${Math.round(t.h)} px`, { anchor: "middle" })}</g>`,
-  );
-
-  // 5. Annotation typo, posée sous la cote de largeur (évite l'eyebrow au-dessus
-  //    du titre). Petit tiret repère vers le bas du titre.
-  if (wide) {
-    const ay = t.y + t.h + 44;
-    parts.push(
-      `<path d="M${t.x.toFixed(1)} ${(t.y + t.h + 4).toFixed(1)}v${(ay - t.y - t.h - 14).toFixed(1)}" stroke="${line}" stroke-width="1"/>`,
-      mono(t.x + 8, ay, `Archivo · 900 · ${fs}px`, { fill: ink }),
-    );
-  }
-
-  // 6. Annotation eyebrow.
-  if (eyebrow) {
-    const e = relBox(eyebrow, origin);
-    parts.push(
-      `<path d="M${(e.x + e.w + 10).toFixed(1)} ${(e.y + e.h / 2).toFixed(1)}h40" stroke="${line}" stroke-width="1"/>`,
-      mono(e.x + e.w + 56, e.y + e.h / 2 + 4, "label · mono", { fill: `rgba(${rgb},0.8)` }),
-    );
-  }
-
-  // 7. Annotation CTA (le vert = l'action). Encadré + hex réel.
-  if (cta && wide) {
-    const c = relBox(cta, origin);
-    parts.push(
-      `<rect x="${(c.x - 4).toFixed(1)}" y="${(c.y - 4).toFixed(1)}" width="${(c.w + 8).toFixed(1)}" height="${(c.h + 8).toFixed(1)}" fill="none" stroke="${line}" stroke-width="1"/>`,
-      `<path d="M${(c.x + c.w + 6).toFixed(1)} ${(c.y - 4).toFixed(1)}l18 -18" stroke="${line}" stroke-width="1"/>`,
-      mono(c.x + c.w + 28, c.y - 24, `CTA · ${accentHex}`, { fill: ink }),
-    );
-  }
-
-  // 8. Cartouche (bloc-titre) en bas à droite, comme sur un plan.
+  // Cartouche (bloc-titre) en bas à droite.
   const bx = W - 20;
   const by = H - 84;
-  parts.push(
-    mono(bx, by, "Chewbackk Studio", { anchor: "end", fill: ink, size: 13 }),
-    mono(bx, by + 18, "Plan · héro · feuille 01", { anchor: "end", fill: `rgba(${rgb},0.7)` }),
-    mono(bx, by + 36, `${W} × ${H} px · grille ${Math.round(cellPx)}`, { anchor: "end", fill: `rgba(${rgb},0.7)` }),
+  base.push(
+    mono(bx, by, "Chewbackk Studio", { anchor: "end", fill: a(0.5), size: 13 }),
+    mono(bx, by + 18, "Plan · héro · feuille 01", { anchor: "end", fill: a(0.42) }),
+    mono(bx, by + 36, `${W} × ${H} px · grille ${Math.round(cellPx)}`, { anchor: "end", fill: a(0.42) }),
   );
 
-  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  svg.innerHTML = parts.join("");
+  // ---- Couche CHAUDE (détail révélé par la lampe) ----
+  const hot: string[] = [];
+  // Cote de hauteur.
+  const dxH = t.x - 22;
+  hot.push(
+    `<path d="M${dxH.toFixed(1)} ${t.y.toFixed(1)}v${t.h.toFixed(1)} M${(dxH - 5).toFixed(1)} ${t.y.toFixed(1)}h10 M${(dxH - 5).toFixed(1)} ${(t.y + t.h).toFixed(1)}h10" stroke="${a(0.7)}" stroke-width="1"/>`,
+    `<g transform="translate(${(dxH - 8).toFixed(1)} ${(t.y + t.h / 2).toFixed(1)}) rotate(-90)">${mono(0, 0, `${Math.round(t.h)} px`, { anchor: "middle", fill: a(0.85) })}</g>`,
+  );
+  if (wide) {
+    const ay = t.y + t.h + 44;
+    hot.push(
+      `<path d="M${t.x.toFixed(1)} ${(t.y + t.h + 4).toFixed(1)}v${(ay - t.y - t.h - 14).toFixed(1)}" stroke="${a(0.6)}" stroke-width="1"/>`,
+      mono(t.x + 8, ay, `Archivo · 900 · ${fs}px`, { fill: a(0.95) }),
+    );
+  }
+  if (eyebrow) {
+    const e = relBox(eyebrow, origin);
+    hot.push(
+      `<path d="M${(e.x + e.w + 10).toFixed(1)} ${(e.y + e.h / 2).toFixed(1)}h40" stroke="${a(0.6)}" stroke-width="1"/>`,
+      mono(e.x + e.w + 56, e.y + e.h / 2 + 4, "label · mono", { fill: a(0.8) }),
+    );
+  }
+  if (cta && wide) {
+    const c = relBox(cta, origin);
+    hot.push(
+      `<rect x="${(c.x - 4).toFixed(1)}" y="${(c.y - 4).toFixed(1)}" width="${(c.w + 8).toFixed(1)}" height="${(c.h + 8).toFixed(1)}" fill="none" stroke="${a(0.7)}" stroke-width="1"/>`,
+      `<path d="M${(c.x + c.w + 6).toFixed(1)} ${(c.y - 4).toFixed(1)}l18 -18" stroke="${a(0.7)}" stroke-width="1"/>`,
+      mono(c.x + c.w + 28, c.y - 24, `CTA · ${accentHex}`, { fill: a(0.9) }),
+    );
+  }
+
+  baseSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  baseSvg.innerHTML = base.join("");
+  hotSvg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  hotSvg.innerHTML = hot.join("");
 }
 
-function scheduleRebuild(hero: HTMLElement, svg: SVGSVGElement): void {
-  if (resizeRaf) cancelAnimationFrame(resizeRaf);
-  resizeRaf = requestAnimationFrame(() => buildPlan(hero, svg));
+/** Place la cote vivante à hauteur du centre du titre (dans le repère hero). */
+function positionDatum(hero: HTMLElement, datum: HTMLElement): void {
+  const word = hero.querySelector<HTMLElement>("[data-title-word]");
+  if (!word) return;
+  const origin = hero.getBoundingClientRect();
+  const t = relBox(word, origin);
+  datum.style.setProperty("--datum-y", `${(t.y + t.h / 2).toFixed(0)}px`);
+}
+
+/** Lecture live : la cote affiche la position réelle du titre à l'écran. */
+function updateDatum(hero: HTMLElement, datum: HTMLElement, read: HTMLElement | null): void {
+  const word = hero.querySelector<HTMLElement>("[data-title-word]");
+  if (!word) return;
+  const top = word.getBoundingClientRect().top;
+  if (read) read.textContent = `y ${Math.round(Math.max(0, top))} px`;
+  // Fond au repos, s'efface quand le hero quitte l'écran (scroll > ~60% de H).
+  const scrolled = window.scrollY;
+  const fade = 1 - Math.min(1, scrolled / (hero.offsetHeight * 0.6));
+  datum.style.setProperty("--datum-op", (0.55 * fade).toFixed(3));
 }
 
 function teardown(): void {
@@ -185,15 +191,13 @@ function teardown(): void {
     window.removeEventListener("resize", onResize);
     onResize = null;
   }
-  if (onToggle && toggleBtn) {
-    toggleBtn.removeEventListener("click", onToggle);
-    onToggle = null;
-    toggleBtn = null;
+  if (onScroll) {
+    window.removeEventListener("scroll", onScroll);
+    onScroll = null;
   }
-  if (resizeRaf) {
-    cancelAnimationFrame(resizeRaf);
-    resizeRaf = 0;
-  }
+  if (resizeRaf) cancelAnimationFrame(resizeRaf);
+  if (scrollRaf) cancelAnimationFrame(scrollRaf);
+  resizeRaf = scrollRaf = 0;
 }
 
 function init(): void {
@@ -203,88 +207,97 @@ function init(): void {
   if (!hero) return;
   const word = hero.querySelector<HTMLElement>("[data-title-word]");
   const title = hero.querySelector<HTMLElement>("[data-hero-title]");
-  const svg = hero.querySelector<SVGSVGElement>("[data-plan-svg]");
-  const plan = hero.querySelector<HTMLElement>("[data-plan]");
+  const baseSvg = hero.querySelector<SVGSVGElement>("[data-plan-base]");
+  const hotSvg = hero.querySelector<SVGSVGElement>("[data-plan-hot-svg]");
+  const datum = hero.querySelector<HTMLElement>("[data-datum]");
+  const read = hero.querySelector<HTMLElement>("[data-datum-read]");
   const fades = gsap.utils.toArray<HTMLElement>("[data-bp-fade]", hero);
   if (!word || !title) return;
 
   const chars = splitWord(word);
   const sig = chars[chars.length - 1];
-  const charsHead = chars.slice(0, -1); // toutes sauf la signature
+  const charsHead = chars.slice(0, -1);
 
-  // Bouton « Voir le plan » (clavier + tactile).
-  toggleBtn = hero.querySelector<HTMLElement>("[data-plan-toggle]");
-  const label = hero.querySelector<HTMLElement>("[data-plan-toggle-label]");
-  if (toggleBtn && plan) {
-    onToggle = () => {
-      const open = plan.classList.toggle("is-open");
-      toggleBtn?.setAttribute("aria-pressed", String(open));
-      if (label) label.textContent = open ? "Masquer le plan" : "Voir le plan";
-      if (open) plan.classList.remove("is-lit");
+  const rebuild = (): void => {
+    if (baseSvg && hotSvg) buildPlan(hero, baseSvg, hotSvg);
+    if (datum) positionDatum(hero, datum);
+  };
+  rebuild();
+  onResize = () => {
+    if (resizeRaf) cancelAnimationFrame(resizeRaf);
+    resizeRaf = requestAnimationFrame(rebuild);
+  };
+  window.addEventListener("resize", onResize);
+  document.fonts?.ready.then(rebuild);
+
+  // Cote vivante : lecture au scroll (rAF-throttlée).
+  if (datum) {
+    updateDatum(hero, datum, read);
+    onScroll = () => {
+      if (scrollRaf) return;
+      scrollRaf = requestAnimationFrame(() => {
+        scrollRaf = 0;
+        updateDatum(hero, datum, read);
+      });
     };
-    toggleBtn.addEventListener("click", onToggle);
-
-    // Deep-link : #plan ouvre le plan au chargement (lien partageable).
-    if (window.location.hash === "#plan") onToggle();
-  }
-
-  // Le plan se mesure sur le rendu réel : (re)construire au resize et une fois
-  // les polices chargées (sinon les cotes sont fausses).
-  if (svg) {
-    buildPlan(hero, svg);
-    onResize = () => scheduleRebuild(hero, svg);
-    window.addEventListener("resize", onResize);
-    document.fonts?.ready.then(() => buildPlan(hero, svg));
+    window.addEventListener("scroll", onScroll, { passive: true });
   }
 
   title.style.visibility = "visible";
 
   if (prefersReducedMotion()) {
-    gsap.set(chars, { yPercent: 0, scale: 1 });
+    gsap.set(chars, { yPercent: 0 });
     gsap.set(fades, { autoAlpha: 1, y: 0 });
     hero.style.setProperty("--bp-grid", "1");
+    hero.style.setProperty("--bp-draw", "1");
+    if (datum) datum.style.setProperty("--datum-op", "0.5");
     hero.classList.add("is-done");
     return;
   }
 
-  // Grille ambiante masquée au départ, révélée en douceur.
   hero.style.setProperty("--bp-grid", "0");
-  const grid = { v: 0 };
+  hero.style.setProperty("--bp-draw", "0");
+  const p = { grid: 0, draw: 0 };
 
   tl = gsap.timeline({
     defaults: { ease: "power4.out" },
     onComplete: () => hero.classList.add("is-done"),
   });
 
-  tl.to(
-    grid,
-    {
-      v: 1,
-      duration: 0.5,
-      ease: "power2.out",
-      onUpdate: () => hero.style.setProperty("--bp-grid", grid.v.toFixed(3)),
-    },
-    0,
-  )
-    // Montée glyphe par glyphe (sauf la signature), puis le « k » se pose en
-    // dernier avec un léger rebond vertical. Aucune mise à l'échelle : scaler le
-    // dernier glyphe le rétrécissait et « coupait » le mot à droite en cours d'anim.
-    .from(
-      charsHead,
-      { yPercent: 118, duration: 0.72, stagger: 0.04 },
-      0.12,
+  tl
+    // Le plan se dessine (balayage) pendant que la grille se révèle.
+    .to(
+      p,
+      {
+        draw: 1,
+        duration: 0.7,
+        ease: "power2.inOut",
+        onUpdate: () => hero.style.setProperty("--bp-draw", p.draw.toFixed(3)),
+      },
+      0,
     )
-    .from(
-      sig,
-      { yPercent: 118, duration: 0.6, ease: "back.out(1.9)" },
-      ">-0.28",
+    .to(
+      p,
+      {
+        grid: 1,
+        duration: 0.6,
+        ease: "power2.out",
+        onUpdate: () => hero.style.setProperty("--bp-grid", p.grid.toFixed(3)),
+      },
+      0.05,
     )
+    // Le nom se compose par-dessus le plan.
+    .from(charsHead, { yPercent: 118, duration: 0.72, stagger: 0.04 }, 0.34)
+    .from(sig, { yPercent: 118, duration: 0.6, ease: "back.out(1.9)" }, ">-0.28")
     .fromTo(
       fades,
       { autoAlpha: 0, y: 16 },
       { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.07 },
-      0.34,
+      0.5,
     );
+
+  // La cote apparaît en douceur une fois le plan dessiné.
+  if (datum) updateDatum(hero, datum, read);
 }
 
 export function bootstrapBlueprint(): void {

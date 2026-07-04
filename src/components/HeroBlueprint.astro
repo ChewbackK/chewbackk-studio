@@ -1,32 +1,40 @@
 ---
 /**
- * HeroBlueprint.astro - direction « Blueprint ».
+ * HeroBlueprint.astro - direction « Blueprint vivant ».
  *
- * Idée : le site montre son propre plan de construction. Une couche cachée
- * (le « plan ») contient les VRAIES cotes de la page, mesurées dans le DOM :
- * largeur/hauteur du titre, grille, annotations mono, repères aux coins. Le
- * curseur agit comme une lampe (masque radial piloté par --mx/--my) qui ne
- * dévoile le plan qu'autour du pointeur. Au clavier / tactile : un bouton
- * « Voir le plan » révèle tout le plan.
+ * Le site EST une planche technique, en permanence, pas un décor caché :
+ *  - Une couche « base » toujours visible (grille, cadre du titre, repères,
+ *    cote de largeur, cartouche) : la feuille sur laquelle le site est dessiné.
+ *  - Une couche « chaude » plus détaillée (cotes fines, spécimen typo, encadré
+ *    CTA), révélée et intensifiée par la lampe curseur autour du pointeur.
+ *  - Une COTE vivante qui suit le scroll : une ligne de mesure balaie le hero
+ *    et affiche la position lue en temps réel (l'instrument de mesure vivant).
+ *  - À l'entrée, le plan se DESSINE (balayage) avant que le titre se compose.
  *
- * Le logotype est verrouillé (« Chewbackk » + label mono « studio »), identique
- * à la nav et au footer. Le dernier « k » est la signature (seul accent du
- * titre) ; le CTA principal est le second et dernier usage du vert.
- *
- * Accessibilité : la couche plan est aria-hidden (décor). Le vrai <h1> porte le
- * nom complet et garde son contraste plein. Sans JS, le hero est lisible et
- * posé à son état final. reduced-motion : aucun mouvement, plan statique.
+ * Toutes les cotes sont mesurées dans le DOM (getBoundingClientRect), donc
+ * vraies, et recalculées au resize. La couche plan est aria-hidden (décor) ; le
+ * <h1> porte le nom complet et garde son contraste. Sans JS : hero lisible, plan
+ * statique. reduced-motion : plan posé, pas de balayage ni de rAF.
  */
 ---
 
 <section class="hero" data-hero>
   <div class="hero__bg" aria-hidden="true"></div>
 
-  <!-- Couche « plan » : remplie en SVG par blueprint.ts (mesures réelles).
-       Invisible tant que la lampe (curseur) ou le bouton ne la révèle pas. -->
+  <!-- Le plan : base (toujours) + chaud (révélé par la lampe). Rempli en SVG
+       par blueprint.ts à partir des mesures réelles. -->
   <div class="hero__plan" data-plan aria-hidden="true">
-    <svg class="hero__plan-svg" data-plan-svg preserveAspectRatio="xMidYMid meet"
-    ></svg>
+    <svg class="hero__plan-svg" data-plan-base preserveAspectRatio="none"></svg>
+    <div class="hero__plan-hot" data-plan-hot>
+      <svg class="hero__plan-svg" data-plan-hot-svg preserveAspectRatio="none"
+      ></svg>
+    </div>
+  </div>
+
+  <!-- Cote vivante : balaie le hero au scroll, lit la position en direct. -->
+  <div class="hero__datum" data-datum aria-hidden="true">
+    <span class="hero__datum-line"></span>
+    <span class="hero__datum-read" data-datum-read>y 0</span>
   </div>
 
   <div class="container hero__inner">
@@ -40,11 +48,8 @@
     </h1>
 
     <div class="hero__row">
-      <!-- Cartouche mono, comme le bloc-titre d'un plan technique. -->
       <dl class="hero__block" data-bp-fade>
-        <div class="hero__block-line">
-          <dt>Par</dt><dd>Evan Bouvier</dd>
-        </div>
+        <div class="hero__block-line"><dt>Par</dt><dd>Evan Bouvier</dd></div>
         <div class="hero__block-line">
           <dt>Fait</dt><dd>Sites, applications, automatisations</dd>
         </div>
@@ -64,17 +69,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Révèle le plan pour clavier et tactile (là où la lampe n'existe pas). -->
-    <button
-      class="hero__plan-toggle"
-      type="button"
-      data-plan-toggle
-      aria-pressed="false"
-    >
-      <span class="hero__plan-toggle-dot" aria-hidden="true"></span>
-      <span data-plan-toggle-label>Voir le plan</span>
-    </button>
   </div>
 </section>
 
@@ -92,15 +86,12 @@
     min-height: 100svh;
     display: flex;
     align-items: center;
-    overflow-x: clip;
+    overflow: clip;
     padding-block: var(--sp-16) var(--sp-8);
-    /* Taille de cellule de la grille : source unique, partagée par la grille
-       ambiante (CSS ci-dessous) ET le plan généré (blueprint.ts la relit). */
     --bp-cell: 5rem;
   }
 
-  /* ---- Fond : sobre. Grille ambiante alignée sur --bp-cell + une seule lueur
-     d'accent très discrète + grain. La typo reste la star. ---- */
+  /* ---- Fond : la « feuille ». Grille + une lueur d'accent discrète + grain. */
   .hero__bg {
     position: absolute;
     inset: 0;
@@ -113,7 +104,6 @@
       ),
       linear-gradient(180deg, #0d0f0d 0%, var(--c-bg) 60%);
   }
-  /* Grille ambiante : mêmes mailles que le plan (pas deux grilles qui jurent). */
   .hero__bg::before {
     content: "";
     position: absolute;
@@ -131,10 +121,8 @@
       );
     -webkit-mask-image: radial-gradient(120% 100% at 50% 30%, #000 40%, transparent 92%);
     mask-image: radial-gradient(120% 100% at 50% 30%, #000 40%, transparent 92%);
-    /* Animé à l'entrée (opacité gérée par blueprint.ts via --bp-grid). */
     opacity: var(--bp-grid, 1);
   }
-  /* Grain fin, sans requête réseau. */
   .hero__bg::after {
     content: "";
     position: absolute;
@@ -144,14 +132,23 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
   }
 
-  /* ---- Couche plan : le blueprint révélé à la lampe ---- */
+  /* ---- Le plan : TOUJOURS visible (base), la feuille technique du site ---- */
   .hero__plan {
     position: absolute;
     inset: 0;
     z-index: -1;
     pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--dur) var(--ease-out);
+    /* Balayage d'entrée : révèle le plan de gauche à droite (--bp-draw 0→1). */
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 0 calc(var(--bp-draw, 1) * 100%),
+      transparent calc(var(--bp-draw, 1) * 100%)
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 0 calc(var(--bp-draw, 1) * 100%),
+      transparent calc(var(--bp-draw, 1) * 100%)
+    );
   }
   .hero__plan-svg {
     position: absolute;
@@ -160,29 +157,71 @@
     height: 100%;
     overflow: visible;
   }
-  /* Allumée par la lampe : visible SEULEMENT dans un disque autour du curseur. */
-  .hero__plan.is-lit {
+  /* Couche chaude : détail supplémentaire, révélé seulement autour du curseur. */
+  .hero__plan-hot {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .hero__plan.is-lit .hero__plan-hot {
     opacity: 1;
     -webkit-mask-image: radial-gradient(
       circle at var(--mx, 50%) var(--my, 50%),
       #000 0,
-      #000 7rem,
-      rgba(0, 0, 0, 0.15) 12rem,
-      transparent 15rem
+      #000 6rem,
+      rgba(0, 0, 0, 0.12) 11rem,
+      transparent 14rem
     );
     mask-image: radial-gradient(
       circle at var(--mx, 50%) var(--my, 50%),
       #000 0,
-      #000 7rem,
-      rgba(0, 0, 0, 0.15) 12rem,
-      transparent 15rem
+      #000 6rem,
+      rgba(0, 0, 0, 0.12) 11rem,
+      transparent 14rem
     );
   }
-  /* Ouverte par le bouton (clavier / tactile) : plan entier, sans masque. */
-  .hero__plan.is-open {
-    opacity: 1;
-    -webkit-mask-image: none;
-    mask-image: none;
+  /* Sans survol (tactile), pas de couche chaude : la base suffit à l'identité. */
+  @media (hover: none) {
+    .hero__plan-hot {
+      display: none;
+    }
+  }
+
+  /* ---- Cote vivante (suit le scroll) ---- */
+  .hero__datum {
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: -1;
+    height: 0;
+    pointer-events: none;
+    transform: translateY(var(--datum-y, 30%));
+    opacity: var(--datum-op, 0);
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .hero__datum-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0,
+      rgba(var(--c-accent-rgb), 0.45) 12%,
+      rgba(var(--c-accent-rgb), 0.45) 88%,
+      transparent 100%
+    );
+  }
+  .hero__datum-read {
+    position: absolute;
+    right: var(--container-pad);
+    top: 6px;
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(var(--c-accent-rgb), 0.85);
   }
 
   .hero__inner {
@@ -209,33 +248,26 @@
     letter-spacing: 0.1em;
   }
 
-  /* ---- Le nom géant : un seul mot, plein cadre ---- */
+  /* ---- Le nom géant ---- */
   .hero__title {
     margin: 0;
     font-weight: 900;
     line-height: 0.9;
     letter-spacing: -0.045em;
-    /* « Chewbackk » en Archivo Black fait ~6em de large : le max est calibré
-       pour que le mot ENTIER (k signature compris) tienne dans le conteneur à
-       toutes les largeurs, jamais rogné. */
     font-size: clamp(2rem, 14vw, 11.5rem);
-    /* Léger débord à gauche pour mordre le cadre (annulé sur petit écran). */
     margin-left: calc(-1 * max(0px, (100vw - var(--container)) / 20));
   }
   .hero__word {
     display: inline-block;
     white-space: nowrap;
   }
-  /* Chaque glyphe est enveloppé par le JS (span.hero__char) pour l'entrée. */
   .hero__title :global(.hero__char) {
     display: inline-block;
     will-change: transform;
   }
-  /* La signature : le tout dernier « k ». Seul accent du titre. */
   .hero__title :global(.hero__char--sig) {
     color: var(--c-accent);
   }
-  /* Masque d'entrée par glyphe (levé une fois l'anim finie). */
   .hero__title :global(.hero__clip) {
     display: inline-block;
     overflow: hidden;
@@ -246,7 +278,6 @@
     overflow: visible;
   }
 
-  /* Anti-flash : si JS + mouvement, on cache l'état initial jusqu'à GSAP. */
   @media (prefers-reduced-motion: no-preference) {
     :global(html.js) .hero__title {
       visibility: hidden;
@@ -262,7 +293,6 @@
     display: grid;
     gap: var(--sp-8);
   }
-
   .hero__block {
     margin: 0;
     display: grid;
@@ -283,15 +313,12 @@
     width: 3.5em;
     text-transform: uppercase;
     letter-spacing: 0.12em;
-    color: var(--c-accent);
-    /* L'accent ici est fin et rare (labels du cartouche) ; il reste lisible
-       AA sur le fond (15.3:1) et ne concurrence pas la signature. */
+    color: var(--c-ink-muted);
   }
   .hero__block dd {
     margin: 0;
     color: var(--c-ink);
   }
-
   .hero__pitch {
     font-size: var(--fs-step-1);
     line-height: var(--lh-snug);
@@ -303,49 +330,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-4);
-  }
-
-  /* ---- Bouton « Voir le plan » : UNIQUEMENT sur appareils sans survol
-     (tactile). Sur souris, la lampe curseur suffit et le bouton parasiterait. */
-  .hero__plan-toggle {
-    display: none;
-    margin-top: var(--sp-8);
-    align-items: center;
-    gap: var(--sp-2);
-    background: transparent;
-    border: 1px solid var(--c-line);
-    border-radius: var(--r-pill);
-    padding: var(--sp-2) var(--sp-4);
-    font-family: var(--font-mono);
-    font-size: var(--fs-step--1);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--c-ink-muted);
-    cursor: pointer;
-    transition:
-      color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out);
-  }
-  .hero__plan-toggle:hover,
-  .hero__plan-toggle[aria-pressed="true"] {
-    color: var(--c-ink);
-    border-color: var(--c-ink-muted);
-  }
-  /* Sur appareils tactiles (pas de survol), on montre le bouton. */
-  @media (hover: none) {
-    .hero__plan-toggle {
-      display: inline-flex;
-    }
-  }
-  .hero__plan-toggle-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border: 1px solid currentColor;
-    border-radius: 50%;
-  }
-  .hero__plan-toggle[aria-pressed="true"] .hero__plan-toggle-dot {
-    background: var(--c-accent);
-    border-color: var(--c-accent);
   }
 
   /* ---- Boutons ---- */
@@ -366,7 +350,6 @@
   .btn:hover {
     transform: translateY(-2px);
   }
-  /* Le seul aplat de vert de la page : le CTA principal. */
   .btn--cta {
     background: var(--c-accent);
     color: var(--c-accent-ink);
@@ -382,7 +365,6 @@
     border-color: var(--c-ink-muted);
   }
 
-  /* ---- Grand écran : cartouche et pitch côte à côte ---- */
   @media (min-width: 900px) {
     .hero__row {
       grid-template-columns: 1fr 1.1fr;
@@ -390,8 +372,6 @@
       gap: var(--sp-16);
     }
   }
-
-  /* Écrans peu hauts : on resserre pour garder les CTA visibles. */
   @media (min-width: 900px) and (max-height: 900px) {
     .hero__title {
       font-size: clamp(2rem, 12vw, 10rem);
@@ -403,10 +383,6 @@
       padding-block: var(--sp-12) var(--sp-6);
     }
   }
-
-  /* Mobile : le nom reste imposant mais tient bord à bord (le « k » signature
-     ne doit jamais être rogné). 14.5vw fait tenir « Chewbackk » (Archivo Black,
-     large) dans le conteneur à 320px comme à 390px. */
   @media (max-width: 560px) {
     .hero__title {
       margin-left: 0;

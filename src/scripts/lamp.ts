@@ -42,16 +42,13 @@ function onPointerMove(e: PointerEvent): void {
     curY = targetY;
     primed = true;
   }
-  // Résilience : rallume la lampe dès qu'on bouge la souris, même si un
-  // `pointerenter` a été manqué (ex. après fermeture du plan « ouvert »).
-  if (plan && !plan.classList.contains("is-open") && !plan.classList.contains("is-lit")) {
-    plan.classList.add("is-lit");
-  }
+  // Résilience : allume la couche chaude dès qu'on bouge la souris, même si un
+  // `pointerenter` a été manqué.
+  if (plan && !plan.classList.contains("is-lit")) plan.classList.add("is-lit");
 }
 
 function onEnter(): void {
-  // Ne pas voler la vedette au plan « ouvert » via le bouton.
-  if (plan && !plan.classList.contains("is-open")) plan.classList.add("is-lit");
+  plan?.classList.add("is-lit");
 }
 function onLeave(): void {
   plan?.classList.remove("is-lit");
