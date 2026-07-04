@@ -210,6 +210,7 @@ function init(): void {
 
   const chars = splitWord(word);
   const sig = chars[chars.length - 1];
+  const charsHead = chars.slice(0, -1); // toutes sauf la signature
 
   // Bouton « Voir le plan » (clavier + tactile).
   toggleBtn = hero.querySelector<HTMLElement>("[data-plan-toggle]");
@@ -265,17 +266,18 @@ function init(): void {
     },
     0,
   )
+    // Montée glyphe par glyphe (sauf la signature), puis le « k » se pose en
+    // dernier avec un léger rebond vertical. Aucune mise à l'échelle : scaler le
+    // dernier glyphe le rétrécissait et « coupait » le mot à droite en cours d'anim.
     .from(
-      chars,
-      { yPercent: 118, duration: 0.72, stagger: 0.035 },
+      charsHead,
+      { yPercent: 118, duration: 0.72, stagger: 0.04 },
       0.12,
     )
-    // La signature (dernier « k ») se verrouille avec un petit snap.
-    .fromTo(
+    .from(
       sig,
-      { scale: 0.62, transformOrigin: "50% 82%" },
-      { scale: 1, duration: 0.42, ease: "back.out(2.4)" },
-      ">-0.12",
+      { yPercent: 118, duration: 0.6, ease: "back.out(1.9)" },
+      ">-0.28",
     )
     .fromTo(
       fades,

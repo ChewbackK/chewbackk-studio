@@ -42,6 +42,11 @@ function onPointerMove(e: PointerEvent): void {
     curY = targetY;
     primed = true;
   }
+  // Résilience : rallume la lampe dès qu'on bouge la souris, même si un
+  // `pointerenter` a été manqué (ex. après fermeture du plan « ouvert »).
+  if (plan && !plan.classList.contains("is-open") && !plan.classList.contains("is-lit")) {
+    plan.classList.add("is-lit");
+  }
 }
 
 function onEnter(): void {

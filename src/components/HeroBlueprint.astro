@@ -305,10 +305,11 @@
     gap: var(--sp-4);
   }
 
-  /* ---- Bouton « Voir le plan » (a11y : lampe pour clavier et tactile) ---- */
+  /* ---- Bouton « Voir le plan » : UNIQUEMENT sur appareils sans survol
+     (tactile). Sur souris, la lampe curseur suffit et le bouton parasiterait. */
   .hero__plan-toggle {
+    display: none;
     margin-top: var(--sp-8);
-    display: inline-flex;
     align-items: center;
     gap: var(--sp-2);
     background: transparent;
@@ -329,6 +330,12 @@
   .hero__plan-toggle[aria-pressed="true"] {
     color: var(--c-ink);
     border-color: var(--c-ink-muted);
+  }
+  /* Sur appareils tactiles (pas de survol), on montre le bouton. */
+  @media (hover: none) {
+    .hero__plan-toggle {
+      display: inline-flex;
+    }
   }
   .hero__plan-toggle-dot {
     width: 0.5rem;
