@@ -5,9 +5,13 @@
 /* ---- Reveal au scroll ----
    État initial posé en CSS ; GSAP/ScrollTrigger anime vers l'état final.
    En reduced-motion, globals.css force l'état final (pas de flash). */
-.reveal {
+/* L'état masqué n'est posé QUE si JS est actif (html.js) : sans JS, aucun
+   ScrollTrigger ne viendra révéler ces blocs, ils doivent donc rester visibles. */
+:where(html.js) .reveal {
   opacity: 0;
   transform: translateY(1.5rem);
+}
+.reveal {
   will-change: opacity, transform;
 }
 

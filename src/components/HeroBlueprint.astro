@@ -1,0 +1,410 @@
+---
+/**
+ * HeroBlueprint.astro - direction « Blueprint ».
+ *
+ * Idée : le site montre son propre plan de construction. Une couche cachée
+ * (le « plan ») contient les VRAIES cotes de la page, mesurées dans le DOM :
+ * largeur/hauteur du titre, grille, annotations mono, repères aux coins. Le
+ * curseur agit comme une lampe (masque radial piloté par --mx/--my) qui ne
+ * dévoile le plan qu'autour du pointeur. Au clavier / tactile : un bouton
+ * « Voir le plan » révèle tout le plan.
+ *
+ * Le logotype est verrouillé (« Chewbackk » + label mono « studio »), identique
+ * à la nav et au footer. Le dernier « k » est la signature (seul accent du
+ * titre) ; le CTA principal est le second et dernier usage du vert.
+ *
+ * Accessibilité : la couche plan est aria-hidden (décor). Le vrai <h1> porte le
+ * nom complet et garde son contraste plein. Sans JS, le hero est lisible et
+ * posé à son état final. reduced-motion : aucun mouvement, plan statique.
+ */
+---
+
+<section class="hero" data-hero>
+  <div class="hero__bg" aria-hidden="true"></div>
+
+  <!-- Couche « plan » : remplie en SVG par blueprint.ts (mesures réelles).
+       Invisible tant que la lampe (curseur) ou le bouton ne la révèle pas. -->
+  <div class="hero__plan" data-plan aria-hidden="true">
+    <svg class="hero__plan-svg" data-plan-svg preserveAspectRatio="xMidYMid meet"
+    ></svg>
+  </div>
+
+  <div class="container hero__inner">
+    <p class="hero__eyebrow" data-bp-fade>
+      <span class="hero__eyebrow-idx">01</span>
+      Studio de développement web
+    </p>
+
+    <h1 class="hero__title" data-hero-title aria-label="Chewbackk Studio">
+      <span class="hero__word" data-title-word>Chewbackk</span>
+    </h1>
+
+    <div class="hero__row">
+      <!-- Cartouche mono, comme le bloc-titre d'un plan technique. -->
+      <dl class="hero__block" data-bp-fade>
+        <div class="hero__block-line">
+          <dt>Par</dt><dd>Evan Bouvier</dd>
+        </div>
+        <div class="hero__block-line">
+          <dt>Fait</dt><dd>Sites, applications, automatisations</dd>
+        </div>
+        <div class="hero__block-line">
+          <dt>Délai</dt><dd>Réponse sous 48 h</dd>
+        </div>
+      </dl>
+
+      <div class="hero__cta" data-bp-fade>
+        <p class="hero__pitch">
+          Du site vitrine à l'application complète. Construit sur mesure,
+          pensé pour durer, à prix accessible.
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--cta" href="/contact">Démarrer un projet</a>
+          <a class="btn btn--ghost" href="/services">Voir les services</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Révèle le plan pour clavier et tactile (là où la lampe n'existe pas). -->
+    <button
+      class="hero__plan-toggle"
+      type="button"
+      data-plan-toggle
+      aria-pressed="false"
+    >
+      <span class="hero__plan-toggle-dot" aria-hidden="true"></span>
+      <span data-plan-toggle-label>Voir le plan</span>
+    </button>
+  </div>
+</section>
+
+<script>
+  import { bootstrapBlueprint } from "../scripts/blueprint";
+  import { bootstrapLamp } from "../scripts/lamp";
+  bootstrapBlueprint();
+  bootstrapLamp();
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow-x: clip;
+    padding-block: var(--sp-16) var(--sp-8);
+    /* Taille de cellule de la grille : source unique, partagée par la grille
+       ambiante (CSS ci-dessous) ET le plan généré (blueprint.ts la relit). */
+    --bp-cell: 5rem;
+  }
+
+  /* ---- Fond : sobre. Grille ambiante alignée sur --bp-cell + une seule lueur
+     d'accent très discrète + grain. La typo reste la star. ---- */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+      radial-gradient(
+        50% 55% at 12% 0%,
+        rgba(var(--c-accent-rgb), 0.1) 0%,
+        transparent 60%
+      ),
+      linear-gradient(180deg, #0d0f0d 0%, var(--c-bg) 60%);
+  }
+  /* Grille ambiante : mêmes mailles que le plan (pas deux grilles qui jurent). */
+  .hero__bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(
+        90deg,
+        rgba(var(--c-ink-rgb), 0.035) 0 1px,
+        transparent 1px var(--bp-cell)
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(var(--c-ink-rgb), 0.035) 0 1px,
+        transparent 1px var(--bp-cell)
+      );
+    -webkit-mask-image: radial-gradient(120% 100% at 50% 30%, #000 40%, transparent 92%);
+    mask-image: radial-gradient(120% 100% at 50% 30%, #000 40%, transparent 92%);
+    /* Animé à l'entrée (opacité gérée par blueprint.ts via --bp-grid). */
+    opacity: var(--bp-grid, 1);
+  }
+  /* Grain fin, sans requête réseau. */
+  .hero__bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+  }
+
+  /* ---- Couche plan : le blueprint révélé à la lampe ---- */
+  .hero__plan {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+  }
+  .hero__plan-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  /* Allumée par la lampe : visible SEULEMENT dans un disque autour du curseur. */
+  .hero__plan.is-lit {
+    opacity: 1;
+    -webkit-mask-image: radial-gradient(
+      circle at var(--mx, 50%) var(--my, 50%),
+      #000 0,
+      #000 7rem,
+      rgba(0, 0, 0, 0.15) 12rem,
+      transparent 15rem
+    );
+    mask-image: radial-gradient(
+      circle at var(--mx, 50%) var(--my, 50%),
+      #000 0,
+      #000 7rem,
+      rgba(0, 0, 0, 0.15) 12rem,
+      transparent 15rem
+    );
+  }
+  /* Ouverte par le bouton (clavier / tactile) : plan entier, sans masque. */
+  .hero__plan.is-open {
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  .hero__inner {
+    position: relative;
+    width: 100%;
+  }
+
+  .hero__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .hero__eyebrow-idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+
+  /* ---- Le nom géant : un seul mot, plein cadre ---- */
+  .hero__title {
+    margin: 0;
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.045em;
+    font-size: clamp(2rem, 15.2vw, 13.5rem);
+    /* Léger débord à gauche pour mordre le cadre (annulé sur petit écran). */
+    margin-left: calc(-1 * max(0px, (100vw - var(--container)) / 20));
+  }
+  .hero__word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+  /* Chaque glyphe est enveloppé par le JS (span.hero__char) pour l'entrée. */
+  .hero__title :global(.hero__char) {
+    display: inline-block;
+    will-change: transform;
+  }
+  /* La signature : le tout dernier « k ». Seul accent du titre. */
+  .hero__title :global(.hero__char--sig) {
+    color: var(--c-accent);
+  }
+  /* Masque d'entrée par glyphe (levé une fois l'anim finie). */
+  .hero__title :global(.hero__clip) {
+    display: inline-block;
+    overflow: hidden;
+    padding-block: 0.06em;
+    vertical-align: top;
+  }
+  .hero.is-done .hero__title :global(.hero__clip) {
+    overflow: visible;
+  }
+
+  /* Anti-flash : si JS + mouvement, on cache l'état initial jusqu'à GSAP. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .hero__title {
+      visibility: hidden;
+    }
+    :global(html.js) [data-bp-fade] {
+      opacity: 0;
+    }
+  }
+
+  /* ---- Bas : cartouche mono à gauche, pitch + CTA à droite ---- */
+  .hero__row {
+    margin-top: var(--sp-12);
+    display: grid;
+    gap: var(--sp-8);
+  }
+
+  .hero__block {
+    margin: 0;
+    display: grid;
+    gap: var(--sp-2);
+    align-content: start;
+    border-top: 1px solid var(--c-line);
+    padding-top: var(--sp-4);
+  }
+  .hero__block-line {
+    display: flex;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    line-height: 1.4;
+  }
+  .hero__block dt {
+    flex: none;
+    width: 3.5em;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-accent);
+    /* L'accent ici est fin et rare (labels du cartouche) ; il reste lisible
+       AA sur le fond (15.3:1) et ne concurrence pas la signature. */
+  }
+  .hero__block dd {
+    margin: 0;
+    color: var(--c-ink);
+  }
+
+  .hero__pitch {
+    font-size: var(--fs-step-1);
+    line-height: var(--lh-snug);
+    color: var(--c-ink);
+    max-width: 42ch;
+    margin-bottom: var(--sp-6);
+  }
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+
+  /* ---- Bouton « Voir le plan » (a11y : lampe pour clavier et tactile) ---- */
+  .hero__plan-toggle {
+    margin-top: var(--sp-8);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sp-2);
+    background: transparent;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-pill);
+    padding: var(--sp-2) var(--sp-4);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--c-ink-muted);
+    cursor: pointer;
+    transition:
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .hero__plan-toggle:hover,
+  .hero__plan-toggle[aria-pressed="true"] {
+    color: var(--c-ink);
+    border-color: var(--c-ink-muted);
+  }
+  .hero__plan-toggle-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+  }
+  .hero__plan-toggle[aria-pressed="true"] .hero__plan-toggle-dot {
+    background: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  /* ---- Boutons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-sm);
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  /* Le seul aplat de vert de la page : le CTA principal. */
+  .btn--cta {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn--cta:hover {
+    box-shadow: 0 12px 34px -10px rgba(var(--c-accent-rgb), 0.55);
+  }
+  .btn--ghost {
+    border: 1px solid var(--c-line);
+    color: var(--c-ink);
+  }
+  .btn--ghost:hover {
+    border-color: var(--c-ink-muted);
+  }
+
+  /* ---- Grand écran : cartouche et pitch côte à côte ---- */
+  @media (min-width: 900px) {
+    .hero__row {
+      grid-template-columns: 1fr 1.1fr;
+      align-items: end;
+      gap: var(--sp-16);
+    }
+  }
+
+  /* Écrans peu hauts : on resserre pour garder les CTA visibles. */
+  @media (min-width: 900px) and (max-height: 900px) {
+    .hero__title {
+      font-size: clamp(2rem, 12vw, 10rem);
+    }
+    .hero__row {
+      margin-top: var(--sp-8);
+    }
+    .hero {
+      padding-block: var(--sp-12) var(--sp-6);
+    }
+  }
+
+  /* Mobile : le nom reste imposant mais tient bord à bord (le « k » signature
+     ne doit jamais être rogné). 14.5vw fait tenir « Chewbackk » (Archivo Black,
+     large) dans le conteneur à 320px comme à 390px. */
+  @media (max-width: 560px) {
+    .hero__title {
+      margin-left: 0;
+      font-size: clamp(2rem, 14.5vw, 5rem);
+      letter-spacing: -0.045em;
+    }
+    .hero__actions .btn {
+      flex: 1 1 auto;
+    }
+  }
+</style>

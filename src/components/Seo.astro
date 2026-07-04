@@ -34,10 +34,18 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon.ico" sizes="any" />
 
-<!-- Préchargement de la webfont d'affichage : elle est utilisée dès le hero. -->
+<!-- Préchargement des webfonts du hero (chemin critique) : Archivo pour le
+     titre XXL, Martian Mono pour les cotes/annotations du plan. -->
 <link
   rel="preload"
-  href="/fonts/SpaceGrotesk-Medium.woff2"
+  href="/fonts/Archivo-Variable.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link
+  rel="preload"
+  href="/fonts/MartianMono-Variable.woff2"
   as="font"
   type="font/woff2"
   crossorigin
@@ -52,4 +60,4 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 <meta property="og:url" content={canonical} />
 {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
 <meta name="twitter:card" content={ogImageUrl ? "summary_large_image" : "summary"} />
-<meta name="theme-color" content="#0b0b12" />
+<meta name="theme-color" content="#0a0a0a" />

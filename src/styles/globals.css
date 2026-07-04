@@ -1,15 +1,23 @@
 /* globals.css - reset léger, styles de base, @font-face, accessibilité.
    Importe tokens.css en amont (fait dans le layout). */
 
-/* ---- Webfont d'affichage (self-hostée, subset Latin+FR ~18 Ko) ---- */
+/* ---- Webfonts self-hostées (woff2 variables, subset latin+FR) ----
+   Archivo : grotesque à fort caractère, graisse jusqu'à 900 pour le titre XXL.
+   Martian Mono : mono technique, sert d'« encre » aux cotes et annotations du
+   plan (direction Blueprint). Les deux sous licence OFL (cf. src/fonts/). */
 @font-face {
-  font-family: "Space Grotesk";
-  src: url("/fonts/SpaceGrotesk-Medium.woff2") format("woff2");
-  font-weight: 500;
+  font-family: "Archivo";
+  src: url("/fonts/Archivo-Variable.woff2") format("woff2");
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
-  /* Fallback métrique approximatif pour limiter le décalage au swap. */
-  size-adjust: 96%;
+}
+@font-face {
+  font-family: "Martian Mono";
+  src: url("/fonts/MartianMono-Variable.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
 }
 
 /* ---- Reset ---- */

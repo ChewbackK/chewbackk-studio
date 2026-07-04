@@ -19,7 +19,8 @@ const isActive = (href: string) =>
 <header class="nav" transition:persist>
   <div class="container nav__inner">
     <a class="nav__brand" href="/" aria-label="Chewbackk Studio - accueil">
-      Chewbackk<span class="nav__brand-accent">.</span>
+      <span class="nav__brand-name">Chewbackk</span>
+      <span class="nav__brand-tag">studio</span>
     </a>
 
     <nav aria-label="Navigation principale">
@@ -62,15 +63,29 @@ const isActive = (href: string) =>
     min-height: 4.25rem;
   }
 
+  /* Logotype verrouillé : « Chewbackk » (Archivo) + label mono « studio ».
+     La même écriture partout (nav, hero, footer, title). Pas d'accent ici :
+     le vert est réservé au hero (signature + CTA). */
   .nav__brand {
-    font-family: var(--font-display);
-    font-size: var(--fs-step-1);
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--sp-2);
     color: var(--c-ink);
     text-decoration: none;
     white-space: nowrap;
   }
-  .nav__brand-accent {
-    color: var(--c-accent);
+  .nav__brand-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: var(--fs-step-1);
+    letter-spacing: -0.02em;
+  }
+  .nav__brand-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7em;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    color: var(--c-ink-muted);
   }
 
   .nav__list {
@@ -113,15 +128,14 @@ const isActive = (href: string) =>
     transform: scaleX(1);
   }
 
-  /* CTA ferme : coins nets (pas de pilule molle), capitales espacées, et de
-     l'air horizontal (le texte ne touche plus les bords). Survol = inversion
-     vers un contour d'accent. */
+  /* CTA nav en ghost : contour discret, se remplit d'accent au survol.
+     Le vert plein est réservé au CTA du hero (accent rationné). */
   .nav__cta {
     margin-left: auto;
     padding: 0.7rem var(--sp-6);
-    background: var(--c-accent);
-    color: var(--c-accent-ink);
-    border: 1px solid var(--c-accent);
+    background: transparent;
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
     border-radius: var(--r-sm);
     font-size: var(--fs-step--1);
     font-weight: 700;
@@ -131,11 +145,13 @@ const isActive = (href: string) =>
     white-space: nowrap;
     transition:
       background-color var(--dur-fast) var(--ease-out),
-      color var(--dur-fast) var(--ease-out);
+      color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
   }
   .nav__cta:hover {
-    background: transparent;
-    color: var(--c-accent);
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+    border-color: var(--c-accent);
   }
 
   /* Sous 640px : on masque les liens centraux (menu complet = tranche future),
