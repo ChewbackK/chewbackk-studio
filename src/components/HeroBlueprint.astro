@@ -215,7 +215,10 @@
     font-weight: 900;
     line-height: 0.9;
     letter-spacing: -0.045em;
-    font-size: clamp(2rem, 15.2vw, 13.5rem);
+    /* « Chewbackk » en Archivo Black fait ~6em de large : le max est calibré
+       pour que le mot ENTIER (k signature compris) tienne dans le conteneur à
+       toutes les largeurs, jamais rogné. */
+    font-size: clamp(2rem, 14vw, 11.5rem);
     /* Léger débord à gauche pour mordre le cadre (annulé sur petit écran). */
     margin-left: calc(-1 * max(0px, (100vw - var(--container)) / 20));
   }

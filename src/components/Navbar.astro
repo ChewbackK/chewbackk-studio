@@ -40,7 +40,10 @@ const isActive = (href: string) =>
       </ul>
     </nav>
 
-    <a class="nav__cta" href="/contact">Démarrer un projet</a>
+    <a class="nav__cta" href="/contact">
+      <span class="nav__cta-full">Démarrer un projet</span>
+      <span class="nav__cta-short">Projet</span>
+    </a>
   </div>
 </header>
 
@@ -153,6 +156,10 @@ const isActive = (href: string) =>
     color: var(--c-accent-ink);
     border-color: var(--c-accent);
   }
+  /* Label court sous 640px (le hero porte déjà le CTA long). */
+  .nav__cta-short {
+    display: none;
+  }
 
   /* Sous 640px : on masque les liens centraux (menu complet = tranche future),
      on garde marque + CTA. Le footer expose toute la navigation entre-temps. */
@@ -161,7 +168,13 @@ const isActive = (href: string) =>
       display: none;
     }
     .nav__cta {
-      padding: var(--sp-2) var(--sp-3);
+      padding: var(--sp-2) var(--sp-4);
+    }
+    .nav__cta-full {
+      display: none;
+    }
+    .nav__cta-short {
+      display: inline;
     }
   }
 
