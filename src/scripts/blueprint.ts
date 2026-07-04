@@ -126,6 +126,19 @@ function buildPlan(
 
   // ---- Couche CHAUDE (détail révélé par la lampe) ----
   const hot: string[] = [];
+  // Trame d'accent révélée SOUS la lampe, partout sur le fond : mailles pleines
+  // (accent net) + demi-mailles fines. C'est l'effet « projecteur » qui éclaire
+  // la construction là où passe le curseur.
+  const gMain: string[] = [];
+  for (let x = cellPx; x < W; x += cellPx) gMain.push(`M${x.toFixed(0)} 0V${H}`);
+  for (let y = cellPx; y < H; y += cellPx) gMain.push(`M0 ${y.toFixed(0)}H${W}`);
+  const gHalf: string[] = [];
+  for (let x = cellPx / 2; x < W; x += cellPx) gHalf.push(`M${x.toFixed(0)} 0V${H}`);
+  for (let y = cellPx / 2; y < H; y += cellPx) gHalf.push(`M0 ${y.toFixed(0)}H${W}`);
+  hot.push(
+    `<path d="${gHalf.join("")}" stroke="${a(0.14)}" stroke-width="1" fill="none"/>`,
+    `<path d="${gMain.join("")}" stroke="${a(0.42)}" stroke-width="1" fill="none"/>`,
+  );
   // Cote de hauteur.
   const dxH = t.x - 22;
   hot.push(
@@ -217,6 +230,10 @@ function init(): void {
   const chars = splitWord(word);
   const sig = chars[chars.length - 1];
   const charsHead = chars.slice(0, -1);
+
+  // Deep-link #plan : dévoile le plan complet au chargement (lien partageable).
+  const plan = hero.querySelector<HTMLElement>("[data-plan]");
+  if (plan && window.location.hash === "#plan") plan.classList.add("is-open");
 
   const rebuild = (): void => {
     if (baseSvg && hotSvg) buildPlan(hero, baseSvg, hotSvg);

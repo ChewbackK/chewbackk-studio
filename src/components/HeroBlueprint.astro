@@ -25,6 +25,7 @@
        par blueprint.ts à partir des mesures réelles. -->
   <div class="hero__plan" data-plan aria-hidden="true">
     <svg class="hero__plan-svg" data-plan-base preserveAspectRatio="none"></svg>
+    <div class="hero__lamp"></div>
     <div class="hero__plan-hot" data-plan-hot>
       <svg class="hero__plan-svg" data-plan-hot-svg preserveAspectRatio="none"
       ></svg>
@@ -157,7 +158,27 @@
     height: 100%;
     overflow: visible;
   }
-  /* Couche chaude : détail supplémentaire, révélé seulement autour du curseur. */
+  /* Lueur douce qui suit le curseur : le « projecteur » visible même sur le
+     fond vide (rallume l'effet souris partout). Piloté par --mx/--my. */
+  .hero__lamp {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity var(--dur) var(--ease-out);
+    background: radial-gradient(
+      14rem 14rem at var(--mx, 50%) var(--my, 50%),
+      rgba(var(--c-accent-rgb), 0.1) 0%,
+      rgba(var(--c-accent-rgb), 0.04) 35%,
+      transparent 65%
+    );
+  }
+  .hero__plan.is-lit .hero__lamp {
+    opacity: 1;
+  }
+
+  /* Couche chaude : détail supplémentaire, révélé seulement autour du curseur.
+     Au repos opacity 0 ; sur tactile la lampe ne se déclenche pas, donc elle
+     reste invisible sans avoir à la masquer explicitement. */
   .hero__plan-hot {
     position: absolute;
     inset: 0;
@@ -181,11 +202,11 @@
       transparent 14rem
     );
   }
-  /* Sans survol (tactile), pas de couche chaude : la base suffit à l'identité. */
-  @media (hover: none) {
-    .hero__plan-hot {
-      display: none;
-    }
+  /* Deep-link #plan : plan complet dévoilé (sans masque), lien partageable. */
+  .hero__plan.is-open .hero__plan-hot {
+    opacity: 1;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   /* ---- Cote vivante (suit le scroll) ---- */
