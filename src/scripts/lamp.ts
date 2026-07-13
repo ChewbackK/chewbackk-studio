@@ -17,6 +17,7 @@ import { prefersReducedMotion } from "./motion";
 const HERO = "[data-hero]";
 const PLAN = "[data-plan]";
 const EASE = 0.18;
+const MAX_R = 14; // rem, doit matcher le rayon du masque en CSS
 const FINE_POINTER = "(hover: hover) and (pointer: fine)";
 
 let hero: HTMLElement | null = null;
@@ -29,6 +30,8 @@ let targetX = 0;
 let targetY = 0;
 let curX = 0;
 let curY = 0;
+let targetR = 0;
+let curR = 0;
 
 let io: IntersectionObserver | null = null;
 
@@ -37,6 +40,7 @@ function onPointerMove(e: PointerEvent): void {
   const r = hero.getBoundingClientRect();
   targetX = e.clientX - r.left;
   targetY = e.clientY - r.top;
+  targetR = MAX_R;
   if (!primed) {
     curX = targetX;
     curY = targetY;
@@ -48,9 +52,11 @@ function onPointerMove(e: PointerEvent): void {
 }
 
 function onEnter(): void {
+  targetR = MAX_R;
   plan?.classList.add("is-lit");
 }
 function onLeave(): void {
+  targetR = 0;
   plan?.classList.remove("is-lit");
 }
 
@@ -58,8 +64,10 @@ function frame(): void {
   if (!running || !plan) return;
   curX += (targetX - curX) * EASE;
   curY += (targetY - curY) * EASE;
+  curR += (targetR - curR) * EASE;
   plan.style.setProperty("--mx", `${curX.toFixed(1)}px`);
   plan.style.setProperty("--my", `${curY.toFixed(1)}px`);
+  plan.style.setProperty("--lamp-r", `${curR.toFixed(2)}rem`);
   rafId = requestAnimationFrame(frame);
 }
 
@@ -125,6 +133,7 @@ function destroy(): void {
   plan = null;
   primed = false;
   targetX = targetY = curX = curY = 0;
+  targetR = curR = 0;
 }
 
 export function bootstrapLamp(): void {

@@ -13,11 +13,15 @@
  * posé à l'état final, aucun balayage, aucune boucle rAF.
  */
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { prefersReducedMotion } from "./motion";
 
 let tl: gsap.core.Timeline | null = null;
+let deconstructST: ScrollTrigger | null = null;
 let resizeRaf = 0;
 let scrollRaf = 0;
+let armRaf = 0;
+let gen = 0;
 let onResize: (() => void) | null = null;
 let onScroll: (() => void) | null = null;
 
@@ -40,6 +44,29 @@ function splitWord(word: HTMLElement): HTMLElement[] {
     chars.push(span);
   });
   return chars;
+}
+
+/**
+ * Déconstruction au scroll (0→1, fourni par le ScrollTrigger épinglé sur le
+ * hero) : chaque lettre perd son remplissage et laisse apparaître son tracé,
+ * décalée dans l'ordre de lecture (démontage gauche→droite). Le hero est
+ * épinglé le temps de l'effet (cf. init) : sans ça, le titre ne fait que
+ * ~150-200px de haut et quitterait l'écran en un seul geste de scroll, bien
+ * avant d'avoir fini de se démonter.
+ */
+function updateDeconstruct(chars: HTMLElement[], progress: number): void {
+  const spread = 0.5;
+  const per = chars.length > 1 ? spread / (chars.length - 1) : 0;
+  chars.forEach((char, i) => {
+    const cp = Math.min(1, Math.max(0, (progress - i * per) / (1 - spread)));
+    const sign = i % 2 === 0 ? -1 : 1;
+    char.style.transform = `translateY(${(cp * -0.55).toFixed(3)}em) rotate(${(cp * sign * 6).toFixed(2)}deg)`;
+    const isSig = char.classList.contains("hero__char--sig");
+    char.style.color = isSig
+      ? `rgba(var(--c-accent-rgb), ${(1 - cp * 0.82).toFixed(3)})`
+      : `rgba(var(--c-ink-rgb), ${(1 - cp * 0.82).toFixed(3)})`;
+    char.style.setProperty("-webkit-text-stroke-width", `${(cp * 1.4).toFixed(2)}px`);
+  });
 }
 
 function cssVar(name: string): string {
@@ -67,6 +94,10 @@ function buildPlan(
   const accentHex = (cssVar("--c-accent") || "#c6f24e").toUpperCase();
   const bg = cssVar("--c-bg") || "#0a0a0a";
   const a = (alpha: number): string => `rgba(${rgb}, ${alpha})`;
+  // Alpha qui monte avec --bp-focus (0→1, piloté par le scroll) : les cotes
+  // autour du titre reprennent le dessus à mesure que le mot se démonte.
+  const af = (base: number, boost: number): string =>
+    `rgba(${rgb}, calc(${base} + var(--bp-focus, 0) * ${boost}))`;
   const cellPx =
     parseFloat(getComputedStyle(hero).getPropertyValue("--bp-cell")) *
       parseFloat(getComputedStyle(document.documentElement).fontSize) || 80;
@@ -98,22 +129,16 @@ function buildPlan(
   for (let y = cellPx; y < H; y += cellPx) grid.push(`M0 ${y.toFixed(0)}H${W}`);
   base.push(`<path d="${grid.join("")}" stroke="${a(0.08)}" stroke-width="1" fill="none"/>`);
   base.push(
-    `<rect x="${t.x.toFixed(1)}" y="${t.y.toFixed(1)}" width="${t.w.toFixed(1)}" height="${t.h.toFixed(1)}" fill="none" stroke="${a(0.26)}" stroke-width="1" stroke-dasharray="2 4"/>`,
+    `<rect x="${t.x.toFixed(1)}" y="${t.y.toFixed(1)}" width="${t.w.toFixed(1)}" height="${t.h.toFixed(1)}" fill="none" style="stroke:${af(0.26, 0.55)}" stroke-width="1" stroke-dasharray="2 4"/>`,
   );
   const cross = (cx: number, cy: number, col: string): string =>
-    `<path d="M${(cx - 7).toFixed(1)} ${cy.toFixed(1)}h14 M${cx.toFixed(1)} ${(cy - 7).toFixed(1)}v14" stroke="${col}" stroke-width="1.5"/>`;
+    `<path d="M${(cx - 7).toFixed(1)} ${cy.toFixed(1)}h14 M${cx.toFixed(1)} ${(cy - 7).toFixed(1)}v14" style="stroke:${col}" stroke-width="1.5"/>`;
+  const crossCol = af(0.4, 0.5);
   base.push(
-    cross(t.x, t.y, a(0.4)),
-    cross(t.x + t.w, t.y, a(0.4)),
-    cross(t.x, t.y + t.h, a(0.4)),
-    cross(t.x + t.w, t.y + t.h, a(0.4)),
-  );
-  // Cote de largeur (base).
-  const dyW = t.y + t.h + 22;
-  base.push(
-    `<path d="M${t.x.toFixed(1)} ${dyW}h${t.w.toFixed(1)} M${t.x.toFixed(1)} ${(dyW - 5).toFixed(1)}v10 M${(t.x + t.w).toFixed(1)} ${(dyW - 5).toFixed(1)}v10" stroke="${a(0.32)}" stroke-width="1"/>`,
-    `<rect x="${(t.x + t.w / 2 - 34).toFixed(1)}" y="${(dyW - 10).toFixed(1)}" width="68" height="18" fill="${bg}"/>`,
-    mono(t.x + t.w / 2, dyW + 4, `${Math.round(t.w)} px`, { anchor: "middle", fill: a(0.55) }),
+    cross(t.x, t.y, crossCol),
+    cross(t.x + t.w, t.y, crossCol),
+    cross(t.x, t.y + t.h, crossCol),
+    cross(t.x + t.w, t.y + t.h, crossCol),
   );
   // Cartouche (bloc-titre) en bas à droite.
   const bx = W - 20;
@@ -138,6 +163,13 @@ function buildPlan(
   hot.push(
     `<path d="${gHalf.join("")}" stroke="${a(0.14)}" stroke-width="1" fill="none"/>`,
     `<path d="${gMain.join("")}" stroke="${a(0.42)}" stroke-width="1" fill="none"/>`,
+  );
+  // Cote de largeur (chaude : mouse-only, comme le reste du détail fin).
+  const dyW = t.y + t.h + 22;
+  hot.push(
+    `<path d="M${t.x.toFixed(1)} ${dyW}h${t.w.toFixed(1)} M${t.x.toFixed(1)} ${(dyW - 5).toFixed(1)}v10 M${(t.x + t.w).toFixed(1)} ${(dyW - 5).toFixed(1)}v10" stroke="${a(0.7)}" stroke-width="1"/>`,
+    `<rect x="${(t.x + t.w / 2 - 34).toFixed(1)}" y="${(dyW - 10).toFixed(1)}" width="68" height="18" fill="${bg}"/>`,
+    mono(t.x + t.w / 2, dyW + 4, `${Math.round(t.w)} px`, { anchor: "middle", fill: a(0.9) }),
   );
   // Cote de hauteur.
   const dxH = t.x - 22;
@@ -200,6 +232,10 @@ function teardown(): void {
     tl.kill();
     tl = null;
   }
+  if (deconstructST) {
+    deconstructST.kill();
+    deconstructST = null;
+  }
   if (onResize) {
     window.removeEventListener("resize", onResize);
     onResize = null;
@@ -210,11 +246,14 @@ function teardown(): void {
   }
   if (resizeRaf) cancelAnimationFrame(resizeRaf);
   if (scrollRaf) cancelAnimationFrame(scrollRaf);
-  resizeRaf = scrollRaf = 0;
+  if (armRaf) cancelAnimationFrame(armRaf);
+  resizeRaf = scrollRaf = armRaf = 0;
 }
 
 function init(): void {
   teardown();
+  // Invalide les continuations asynchrones (fonts, rAF) d'un init précédent.
+  const myGen = ++gen;
 
   const hero = document.querySelector<HTMLElement>("[data-hero]");
   if (!hero) return;
@@ -230,6 +269,9 @@ function init(): void {
   const chars = splitWord(word);
   const sig = chars[chars.length - 1];
   const charsHead = chars.slice(0, -1);
+  // `astro:page-load` peut rejouer sur le même DOM : l'entrée repart avec des
+  // clips fermés, pas avec l'overflow libéré d'une passe précédente.
+  hero.classList.remove("is-done");
 
   // Deep-link #plan : dévoile le plan complet au chargement (lien partageable).
   const plan = hero.querySelector<HTMLElement>("[data-plan]");
@@ -245,7 +287,12 @@ function init(): void {
     resizeRaf = requestAnimationFrame(rebuild);
   };
   window.addEventListener("resize", onResize);
-  document.fonts?.ready.then(rebuild);
+  document.fonts?.ready.then(() => {
+    rebuild();
+    // La police custom peut changer la hauteur du titre : la distance
+    // épinglée par le ScrollTrigger doit être recalculée en conséquence.
+    ScrollTrigger.refresh();
+  });
 
   // Cote vivante : lecture au scroll (rAF-throttlée).
   if (datum) {
@@ -260,9 +307,8 @@ function init(): void {
     window.addEventListener("scroll", onScroll, { passive: true });
   }
 
-  title.style.visibility = "visible";
-
   if (prefersReducedMotion()) {
+    title.style.visibility = "visible";
     gsap.set(chars, { yPercent: 0 });
     gsap.set(fades, { autoAlpha: 1, y: 0 });
     hero.style.setProperty("--bp-grid", "1");
@@ -274,44 +320,97 @@ function init(): void {
 
   hero.style.setProperty("--bp-grid", "0");
   hero.style.setProperty("--bp-draw", "0");
-  const p = { grid: 0, draw: 0 };
+  let entryDone = false;
 
-  tl = gsap.timeline({
-    defaults: { ease: "power4.out" },
-    onComplete: () => hero.classList.add("is-done"),
+  // Le pin (hero épinglé pendant la déconstruction) s'arme DÈS l'init, une
+  // frame plus tard : hors du dispatch `astro:page-load`, dont l'init de
+  // smooth-scroll tue tous les ScrollTriggers. Armé seulement à la fin de
+  // l'entrée (comme avant), le pin-spacer s'insérait ~1.7s après le
+  // chargement : layout shift, et un scroll pendant l'entrée emportait le
+  // hero à mi-composition puis le faisait sauter à la création du pin. Sans
+  // le pin, le titre (~150-200px de haut) quitterait de toute façon l'écran
+  // en un seul geste de scroll, avant d'avoir fini de se démonter.
+  gsap.registerPlugin(ScrollTrigger);
+  armRaf = requestAnimationFrame(() => {
+    armRaf = 0;
+    if (myGen !== gen) return;
+    deconstructST = ScrollTrigger.create({
+      trigger: hero,
+      start: "top top",
+      end: () => `+=${Math.round(window.innerHeight * 0.45)}`,
+      pin: true,
+      scrub: 0.3,
+      onUpdate: (self) => {
+        hero.style.setProperty("--bp-focus", self.progress.toFixed(3));
+        // Pendant l'entrée, les .from() possèdent les transforms des
+        // lettres : la déconstruction n'écrit qu'une fois la composition
+        // finie (rattrapage dans onComplete si on a scrollé entre-temps).
+        if (entryDone) updateDeconstruct(chars, self.progress);
+      },
+    });
   });
 
-  tl
-    // Le plan se dessine (balayage) pendant que la grille se révèle.
-    .to(
-      p,
-      {
-        draw: 1,
-        duration: 0.7,
-        ease: "power2.inOut",
-        onUpdate: () => hero.style.setProperty("--bp-draw", p.draw.toFixed(3)),
+  // L'entrée du titre attend la police définitive : partie avec la fallback,
+  // Archivo swapperait en plein vol (hard refresh / cache froid) et les
+  // lettres changeraient de forme à mi-montée. Plafond court pour ne jamais
+  // bloquer le hero sur un réseau lent (les woff2 sont préchargées).
+  const fontsReady: Promise<unknown> = document.fonts
+    ? Promise.race([
+        document.fonts.ready,
+        new Promise((resolve) => setTimeout(resolve, 800)),
+      ])
+    : Promise.resolve();
+
+  fontsReady.then(() => {
+    if (myGen !== gen) return;
+    title.style.visibility = "visible";
+    const p = { grid: 0, draw: 0 };
+
+    tl = gsap.timeline({
+      defaults: { ease: "power4.out" },
+      onComplete: () => {
+        hero.classList.add("is-done");
+        entryDone = true;
+        if (deconstructST) updateDeconstruct(chars, deconstructST.progress);
       },
-      0,
-    )
-    .to(
-      p,
-      {
-        grid: 1,
-        duration: 0.6,
-        ease: "power2.out",
-        onUpdate: () => hero.style.setProperty("--bp-grid", p.grid.toFixed(3)),
-      },
-      0.05,
-    )
-    // Le nom se compose par-dessus le plan.
-    .from(charsHead, { yPercent: 118, duration: 0.72, stagger: 0.04 }, 0.34)
-    .from(sig, { yPercent: 118, duration: 0.6, ease: "back.out(1.9)" }, ">-0.28")
-    .fromTo(
-      fades,
-      { autoAlpha: 0, y: 16 },
-      { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.07 },
-      0.5,
-    );
+    });
+
+    tl
+      // Le plan se dessine (balayage) pendant que la grille se révèle.
+      .to(
+        p,
+        {
+          draw: 1,
+          duration: 0.7,
+          ease: "power2.inOut",
+          onUpdate: () => hero.style.setProperty("--bp-draw", p.draw.toFixed(3)),
+        },
+        0,
+      )
+      .to(
+        p,
+        {
+          grid: 1,
+          duration: 0.6,
+          ease: "power2.out",
+          onUpdate: () => hero.style.setProperty("--bp-grid", p.grid.toFixed(3)),
+        },
+        0.05,
+      )
+      // Le nom se compose par-dessus le plan.
+      .from(charsHead, { yPercent: 118, duration: 0.72, stagger: 0.04 }, 0.34)
+      // Pas de back.out ici : la lettre monte dans un .hero__clip { overflow:hidden }
+      // avec peu de marge verticale (0.06em de padding). Un ease à rebond
+      // dépasserait la position finale et se ferait couper par le haut de la
+      // boîte le temps du dépassement.
+      .from(sig, { yPercent: 118, duration: 0.6 }, ">-0.28")
+      .fromTo(
+        fades,
+        { autoAlpha: 0, y: 16 },
+        { autoAlpha: 1, y: 0, duration: 0.6, stagger: 0.07 },
+        0.5,
+      );
+  });
 
   // La cote apparaît en douceur une fois le plan dessiné.
   if (datum) updateDatum(hero, datum, read);

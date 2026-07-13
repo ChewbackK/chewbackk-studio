@@ -177,34 +177,32 @@
   }
 
   /* Couche chaude : détail supplémentaire, révélé seulement autour du curseur.
-     Au repos opacity 0 ; sur tactile la lampe ne se déclenche pas, donc elle
-     reste invisible sans avoir à la masquer explicitement. */
+     Le rayon du masque (--lamp-r) est piloté image par image par lamp.ts (lerp,
+     0→14rem), pas par un simple bascule de classe : mask-image ne se transitionne
+     pas nativement en CSS, un bascule .is-lit ⇄ off ferait flasher toute la
+     couche (plein cadre, sans masque) le temps que l'opacity rattrape. Sur
+     tactile / reduced-motion, --lamp-r reste à 0 (lamp.ts ne tourne pas) :
+     la couche reste invisible sans avoir à la masquer explicitement. */
   .hero__plan-hot {
     position: absolute;
     inset: 0;
-    opacity: 0;
-    transition: opacity var(--dur) var(--ease-out);
-  }
-  .hero__plan.is-lit .hero__plan-hot {
-    opacity: 1;
     -webkit-mask-image: radial-gradient(
       circle at var(--mx, 50%) var(--my, 50%),
       #000 0,
-      #000 6rem,
-      rgba(0, 0, 0, 0.12) 11rem,
-      transparent 14rem
+      #000 calc(var(--lamp-r, 0rem) * 0.4286),
+      rgba(0, 0, 0, 0.12) calc(var(--lamp-r, 0rem) * 0.7857),
+      transparent var(--lamp-r, 0rem)
     );
     mask-image: radial-gradient(
       circle at var(--mx, 50%) var(--my, 50%),
       #000 0,
-      #000 6rem,
-      rgba(0, 0, 0, 0.12) 11rem,
-      transparent 14rem
+      #000 calc(var(--lamp-r, 0rem) * 0.4286),
+      rgba(0, 0, 0, 0.12) calc(var(--lamp-r, 0rem) * 0.7857),
+      transparent var(--lamp-r, 0rem)
     );
   }
   /* Deep-link #plan : plan complet dévoilé (sans masque), lien partageable. */
   .hero__plan.is-open .hero__plan-hot {
-    opacity: 1;
     -webkit-mask-image: none;
     mask-image: none;
   }
@@ -285,14 +283,28 @@
   .hero__title :global(.hero__char) {
     display: inline-block;
     will-change: transform;
+    /* Trait révélé au scroll (updateDeconstruct fait monter la largeur) :
+       accent sur le corps du mot, encre sur la signature (inversion). */
+    -webkit-text-stroke-color: rgba(var(--c-accent-rgb), 0.85);
   }
   .hero__title :global(.hero__char--sig) {
     color: var(--c-accent);
+    -webkit-text-stroke-color: rgba(var(--c-ink-rgb), 0.85);
   }
   .hero__title :global(.hero__clip) {
     display: inline-block;
     overflow: hidden;
+    /* La fenêtre de clip doit respirer DANS LES DEUX AXES :
+       - vertical : 0.06em au-dessus/dessous de la boîte de ligne (0.9) ;
+       - horizontal : letter-spacing -0.045em rétrécit la boîte de contenu de
+         chaque glyphe au-delà de ses side bearings — mesuré jusqu'à ~8px
+         d'encre hors boîte à droite (w, a, k) en Archivo 900 à 160px. Sans
+         padding-inline, ces bords droits sont rasés pendant toute l'entrée.
+         Les margin-inline négatifs compensent le padding : largeur et
+         position du mot inchangées au pixel près. */
     padding-block: 0.06em;
+    padding-inline: 0.12em;
+    margin-inline: -0.12em;
     vertical-align: top;
   }
   .hero.is-done .hero__title :global(.hero__clip) {
