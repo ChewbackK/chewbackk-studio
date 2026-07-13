@@ -399,11 +399,12 @@ function init(): void {
       )
       // Le nom se compose par-dessus le plan.
       .from(charsHead, { yPercent: 118, duration: 0.72, stagger: 0.04 }, 0.34)
-      // Pas de back.out ici : la lettre monte dans un .hero__clip { overflow:hidden }
-      // avec peu de marge verticale (0.06em de padding). Un ease à rebond
-      // dépasserait la position finale et se ferait couper par le haut de la
-      // boîte le temps du dépassement.
-      .from(sig, { yPercent: 118, duration: 0.6 }, ">-0.28")
+      // La signature rebondit : back.out(1.9) dépasse la position finale de
+      // ~12% de la course (118 yPercent) ≈ 0.13em vers le haut au pic. Sa
+      // fenêtre de clip a le padding-top qu'il faut pour l'absorber (0.1em +
+      // ~0.05em d'encre sous le bord, cf. CSS .hero__clip:last-child) : rien
+      // ne se fait couper pendant le rebond.
+      .from(sig, { yPercent: 118, duration: 0.6, ease: "back.out(1.9)" }, ">-0.28")
       .fromTo(
         fades,
         { autoAlpha: 0, y: 16 },

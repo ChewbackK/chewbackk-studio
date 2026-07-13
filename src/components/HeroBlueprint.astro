@@ -307,6 +307,15 @@
     margin-inline: -0.12em;
     vertical-align: top;
   }
+  /* Le k signature arrive avec un rebond (back.out, cf. blueprint.ts) qui
+     dépasse sa position finale de ~0.13em vers le haut : sa fenêtre reçoit
+     l'air nécessaire au-dessus. Le margin-top négatif compense : la boîte de
+     marge garde la hauteur des autres clips (1.02em), le glyphe reste aligné,
+     la hauteur de ligne du titre ne bouge pas. */
+  .hero__title :global(.hero__clip:last-child) {
+    padding-top: 0.1em;
+    margin-top: -0.04em;
+  }
   .hero.is-done .hero__title :global(.hero__clip) {
     overflow: visible;
   }
