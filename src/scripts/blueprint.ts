@@ -54,6 +54,11 @@ function splitWord(word: HTMLElement): HTMLElement[] {
  * ~150-200px de haut et quitterait l'écran en un seul geste de scroll, bien
  * avant d'avoir fini de se démonter.
  */
+/** Progression du pin → progression de l'effet (sortie douce, bornes exactes). */
+function easeFocus(p: number): number {
+  return 1 - Math.pow(1 - p, 1.7);
+}
+
 function updateDeconstruct(chars: HTMLElement[], progress: number): void {
   const spread = 0.5;
   const per = chars.length > 1 ? spread / (chars.length - 1) : 0;
@@ -337,15 +342,23 @@ function init(): void {
     deconstructST = ScrollTrigger.create({
       trigger: hero,
       start: "top top",
-      end: () => `+=${Math.round(window.innerHeight * 0.45)}`,
+      // Distance courte : le pin ne doit pas allonger le hero au point que
+      // le scroll paraisse bloqué (~2-3 crans de molette suffisent).
+      end: () => `+=${Math.round(window.innerHeight * 0.28)}`,
       pin: true,
       scrub: 0.3,
       onUpdate: (self) => {
-        hero.style.setProperty("--bp-focus", self.progress.toFixed(3));
+        // Progression easée (sortie douce) : mappée linéairement, les
+        // premiers ~15% de scroll ne bougeaient les lettres que de quelques
+        // px — impression de scroll mort, puis d'animation « en retard ».
+        // Là, le premier cran produit déjà un mouvement franc. Bornes
+        // exactes conservées (0→0, 1→1) : réversible, libération nette.
+        const eased = easeFocus(self.progress);
+        hero.style.setProperty("--bp-focus", eased.toFixed(3));
         // Pendant l'entrée, les .from() possèdent les transforms des
         // lettres : la déconstruction n'écrit qu'une fois la composition
         // finie (rattrapage dans onComplete si on a scrollé entre-temps).
-        if (entryDone) updateDeconstruct(chars, self.progress);
+        if (entryDone) updateDeconstruct(chars, eased);
       },
     });
   });
@@ -371,7 +384,7 @@ function init(): void {
       onComplete: () => {
         hero.classList.add("is-done");
         entryDone = true;
-        if (deconstructST) updateDeconstruct(chars, deconstructST.progress);
+        if (deconstructST) updateDeconstruct(chars, easeFocus(deconstructST.progress));
       },
     });
 
