@@ -47,12 +47,12 @@ function splitWord(word: HTMLElement): HTMLElement[] {
 }
 
 /**
- * Déconstruction au scroll (0→1, fourni par le ScrollTrigger du hero) :
- * chaque lettre perd son remplissage et laisse apparaître son tracé, décalée
- * dans l'ordre de lecture (démontage gauche→droite). Pas de pin : l'effet se
- * joue pendant la sortie naturelle du hero, compressé sur les premiers ~22%
- * de viewport (progression easée, cf. init) pour être bien visible avant que
- * le titre ne quitte l'écran.
+ * Déconstruction au scroll (0→1, fourni par le ScrollTrigger épinglé du
+ * hero) : chaque lettre perd son remplissage et laisse apparaître son tracé,
+ * décalée dans l'ordre de lecture (démontage gauche→droite). Le hero est
+ * épinglé dès le pixel zéro de scroll (navbar + hero = un écran, cf. CSS) :
+ * l'effet se joue entièrement à l'écran sur ~28% de viewport de scroll,
+ * progression easée pour répondre franchement dès le premier cran.
  */
 /** Progression du pin → progression de l'effet (sortie douce, bornes exactes). */
 function easeFocus(p: number): number {
@@ -329,20 +329,22 @@ function init(): void {
 
   // La déconstruction s'arme dès l'init, une frame plus tard : hors du
   // dispatch `astro:page-load`, dont l'init de smooth-scroll tue tous les
-  // ScrollTriggers. PAS de pin : un hero épinglé occupe sa hauteur PLUS la
-  // distance d'épinglage dans le défilement (le hero « faisait plus qu'une
-  // page » et le scroll semblait bloqué). Ici l'effet chevauche la sortie
-  // naturelle du hero : il démarre au tout premier pixel de scroll (start
-  // calé sur la position du hero sous la navbar) et se joue pendant les
-  // premiers ~22% de viewport, tant que le titre est encore bien visible.
+  // ScrollTriggers. Le hero est ÉPINGLÉ pendant l'effet : le bazar des
+  // lettres se joue À L'ÉCRAN, hero immobile, pas pendant la descente.
+  // Navbar + hero = exactement un écran (cf. --nav-h), donc l'épinglage
+  // démarre au pixel zéro de scroll (start/end absolus, en px de scroll) :
+  // premier cran de molette = l'animation, sans avoir à « descendre en bas
+  // du hero » d'abord. Coût assumé du pin : ~28% de viewport de défilement
+  // en plus avant que la page reprenne — mais court et animé en continu.
   gsap.registerPlugin(ScrollTrigger);
   armRaf = requestAnimationFrame(() => {
     armRaf = 0;
     if (myGen !== gen) return;
     deconstructST = ScrollTrigger.create({
       trigger: hero,
-      start: () => `top ${Math.round(hero.offsetTop)}px`,
-      end: () => `+=${Math.round(window.innerHeight * 0.22)}`,
+      pin: true,
+      start: 0,
+      end: () => Math.round(window.innerHeight * 0.28),
       scrub: 0.3,
       onUpdate: (self) => {
         // Progression easée (sortie douce) : mappée linéairement, les
