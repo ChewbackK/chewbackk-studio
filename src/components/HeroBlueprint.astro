@@ -260,7 +260,10 @@
 
   .hero__eyebrow {
     display: flex;
-    align-items: center;
+    /* baseline : quand le libellé passe sur deux lignes (mobile), le badge
+       « 01 » reste ancré à la première ligne au lieu de flotter entre les
+       deux. */
+    align-items: baseline;
     gap: var(--sp-3);
     font-family: var(--font-mono);
     font-size: var(--fs-step--1);
@@ -307,7 +310,7 @@
     /* La fenêtre de clip doit respirer DANS LES DEUX AXES :
        - vertical : 0.06em au-dessus/dessous de la boîte de ligne (0.9) ;
        - horizontal : letter-spacing -0.045em rétrécit la boîte de contenu de
-         chaque glyphe au-delà de ses side bearings — mesuré jusqu'à ~8px
+         chaque glyphe au-delà de ses side bearings : mesuré jusqu'à ~8px
          d'encre hors boîte à droite (w, a, k) en Archivo 900 à 160px. Sans
          padding-inline, ces bords droits sont rasés pendant toute l'entrée.
          Les margin-inline négatifs compensent le padding : largeur et

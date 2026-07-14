@@ -79,7 +79,7 @@ function updateDeconstruct(chars: HTMLElement[], progress: number, drift = 0): v
     const cp = Math.min(1, Math.max(0, (progress - i * per) / (1 - spread)));
     const sign = i % 2 === 0 ? -1 : 1;
     // `drift` (0→1 pendant le palier) : le mot démonté continue de dériver
-    // très légèrement vers le haut — chaque cran de scroll répond, le palier
+    // très légèrement vers le haut : chaque cran de scroll répond, le palier
     // ne se lit pas comme un blocage.
     char.style.transform = `translateY(${(cp * -0.55 - drift * 0.1).toFixed(3)}em) rotate(${(cp * sign * 6).toFixed(2)}deg)`;
     const isSig = char.classList.contains("hero__char--sig");
