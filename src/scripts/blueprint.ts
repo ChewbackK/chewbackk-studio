@@ -55,20 +55,21 @@ function splitWord(word: HTMLElement): HTMLElement[] {
  * progression easée pour répondre franchement dès le premier cran.
  */
 /**
- * Progression du pin → progression de l'effet (sortie douce, bornes exactes).
- * L'effet n'occupe que les premiers FOCUS_SPAN du pin : le reste est un
- * PALIER (focus tenu à 1) — le mot démonté reste affiché à l'écran un moment
- * avant que le hero se libère.
+ * Progression du scroll (0→1) → progression de l'effet (sortie douce, bornes
+ * exactes). L'effet n'occupe que la première part `span` de la plage : le
+ * reste est un PALIER (focus tenu à 1), le mot démonté reste affiché avant
+ * que le hero se libère. `span = 1` = pas de palier (mode tactile).
  */
 const FOCUS_SPAN = 0.35;
-function easeFocus(p: number): number {
-  const t = Math.min(1, p / FOCUS_SPAN);
+function easeFocus(p: number, span: number): number {
+  const t = Math.min(1, p / span);
   return 1 - Math.pow(1 - t, 1.7);
 }
 
 /** Part du palier déjà parcourue : 0 tant que l'effet joue, puis 0→1. */
-function holdProgress(p: number): number {
-  return Math.max(0, (p - FOCUS_SPAN) / (1 - FOCUS_SPAN));
+function holdProgress(p: number, span: number): number {
+  if (span >= 1) return 0;
+  return Math.max(0, (p - span) / (1 - span));
 }
 
 function updateDeconstruct(chars: HTMLElement[], progress: number, drift = 0): void {
@@ -351,37 +352,42 @@ function init(): void {
 
   // La déconstruction s'arme dès l'init, une frame plus tard : hors du
   // dispatch `astro:page-load`, dont l'init de smooth-scroll tue tous les
-  // ScrollTriggers. Le hero est ÉPINGLÉ pendant l'effet : le bazar des
-  // lettres se joue À L'ÉCRAN, hero immobile, pas pendant la descente.
-  // Navbar + hero = exactement un écran (cf. --nav-h), donc l'épinglage
-  // démarre au pixel zéro de scroll (start/end absolus, en px de scroll) :
-  // premier cran de molette = l'animation, sans avoir à « descendre en bas
-  // du hero » d'abord. Coût assumé du pin : ~28% de viewport de défilement
-  // en plus avant que la page reprenne — mais court et animé en continu.
+  // ScrollTriggers. Navbar + hero = exactement un écran (cf. --nav-h) :
+  // l'effet démarre au pixel zéro de scroll (start/end absolus, en px).
+  // Deux dosages selon le pointeur PRINCIPAL (pointer seul, pas hover :
+  // certains environnements sans souris déclarent hover:none alors que le
+  // scroll molette existe, et le pin ne dépend que de la précision du
+  // pointeur) :
+  //  - pointeur fin : hero ÉPINGLÉ, le bazar des lettres se joue à l'écran
+  //    (effet sur les premiers 35% de ~75% de viewport, puis palier avec
+  //    dérive douce : le mot démonté se contemple avant la libération) ;
+  //  - tactile : AUCUN pin (un swipe ne doit jamais être retenu ; mesuré :
+  //    613px de scroll figé sur un écran de 817), l'effet accompagne la
+  //    sortie naturelle du hero sur ~30% de viewport, sans palier ni dérive.
   gsap.registerPlugin(ScrollTrigger);
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const pinned = !coarse;
+  const distance = pinned ? 0.75 : 0.3;
+  const span = pinned ? FOCUS_SPAN : 1;
   armRaf = requestAnimationFrame(() => {
     armRaf = 0;
     if (myGen !== gen) return;
     deconstructST = ScrollTrigger.create({
       trigger: hero,
-      pin: true,
+      pin: pinned,
       start: 0,
-      // ~75% de viewport épinglés : l'effet sur les premiers ~35% (soit
-      // l'équivalent des ~26% d'avant), puis un LONG palier (cf. easeFocus)
-      // — le mot démonté se contemple bien plus longtemps qu'il n'a mis à
-      // se démonter, avec une dérive lente pour garder le scroll vivant.
-      end: () => Math.round(window.innerHeight * 0.75),
+      end: () => Math.round(window.innerHeight * distance),
       scrub: 0.3,
       onUpdate: (self) => {
         // Progression easée (sortie douce) : mappée linéairement, les
         // premiers crans ne bougeraient les lettres que de quelques px.
         // Bornes exactes conservées (0→0, 1→1) : réversible.
-        const eased = easeFocus(self.progress);
+        const eased = easeFocus(self.progress, span);
         hero.style.setProperty("--bp-focus", eased.toFixed(3));
         // Pendant l'entrée, les .from() possèdent les transforms des
         // lettres : la déconstruction n'écrit qu'une fois la composition
         // finie (rattrapage dans onComplete si on a scrollé entre-temps).
-        if (entryDone) updateDeconstruct(chars, eased, holdProgress(self.progress));
+        if (entryDone) updateDeconstruct(chars, eased, holdProgress(self.progress, span));
       },
     });
   });
@@ -409,7 +415,7 @@ function init(): void {
         entryDone = true;
         if (deconstructST) {
           const p = deconstructST.progress;
-          updateDeconstruct(chars, easeFocus(p), holdProgress(p));
+          updateDeconstruct(chars, easeFocus(p, span), holdProgress(p, span));
         }
       },
     });
