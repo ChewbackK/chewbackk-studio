@@ -1,0 +1,188 @@
+---
+/**
+ * realisations.astro - projets réels livrés (brief §3).
+ * UDPS 56 volontairement absent : projet en stand-by (contenu/décision pas
+ * prêts). On ne montre que ce qui est fini : Axel Mahé + le placeholder.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const projects = [
+  {
+    name: "Axel Mahé",
+    role: "Étudiant réalisateur (futur réalisateur)",
+    desc: "Portfolio cinéma : design sombre, galerie de films.",
+    tags: ["Front uniquement"],
+    year: "2026",
+    url: "https://axel-mahe.netlify.app",
+  },
+];
+---
+
+<BaseLayout
+  title="Réalisations - Chewbackk Studio"
+  description="Projets récents livrés par Chewbackk Studio : portfolios, applications, sites vitrines."
+>
+  <section class="page-head">
+    <div class="container">
+      <p class="page-head__eyebrow">
+        <span class="page-head__idx">03</span> Réalisations
+      </p>
+      <h1 class="page-head__title">Des projets livrés</h1>
+      <p class="page-head__pitch">
+        Un aperçu de ce qui a déjà été construit. La liste s'allonge au fil des
+        projets.
+      </p>
+    </div>
+  </section>
+
+  <section class="projects">
+    <div class="container projects__grid">
+      {
+        projects.map((p) => (
+          <article class="project">
+            <div class="project__head">
+              <h2 class="project__name">{p.name}</h2>
+              <span class="project__year">{p.year}</span>
+            </div>
+            <p class="project__role">{p.role}</p>
+            <p class="project__desc">{p.desc}</p>
+            <ul class="project__tags">
+              {p.tags.map((t) => (
+                <li>{t}</li>
+              ))}
+            </ul>
+            <a class="project__link" href={p.url} target="_blank" rel="noopener noreferrer">
+              Voir le site &rarr;
+            </a>
+          </article>
+        ))
+      }
+
+      <article class="project project--placeholder">
+        <div class="project__head">
+          <h2 class="project__name">Votre projet</h2>
+        </div>
+        <p class="project__desc">
+          La prochaine réalisation pourrait être la vôtre. Parlons-en.
+        </p>
+        <a class="project__link" href="/contact">Démarrer un projet &rarr;</a>
+      </article>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding-block: var(--section-pad) var(--sp-8);
+  }
+  .page-head__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .page-head__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .page-head__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .page-head__pitch {
+    margin-top: var(--sp-4);
+    max-width: 56ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .projects {
+    padding-block: var(--sp-8) var(--section-pad);
+  }
+  .projects__grid {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  @media (min-width: 720px) {
+    .projects__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .project {
+    display: grid;
+    align-content: start;
+    gap: var(--sp-3);
+    padding: var(--sp-6);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+  }
+  .project--placeholder {
+    border-style: dashed;
+    color: var(--c-ink-muted);
+  }
+  .project__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--sp-3);
+  }
+  .project__name {
+    font-size: var(--fs-step-2);
+    margin: 0;
+  }
+  .project__year {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+  }
+  .project__role {
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+    margin: 0;
+  }
+  .project__desc {
+    color: var(--c-ink-muted);
+    margin: 0;
+  }
+  .project__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: 0;
+    padding: 0;
+  }
+  .project__tags li {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.2em 0.6em;
+  }
+  .project__link {
+    margin-top: var(--sp-2);
+    color: var(--c-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-line);
+    width: fit-content;
+  }
+  .project__link:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+</style>

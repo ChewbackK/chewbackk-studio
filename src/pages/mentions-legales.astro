@@ -1,0 +1,158 @@
+---
+/**
+ * mentions-legales.astro - contenu minimal légalement requis (brief §5, LCEN)
+ * + la mention de confidentialité exigée par le brief pour le formulaire de
+ * devis (RGPD). Adresse volontairement en placeholder : décision de
+ * domiciliation pas encore tranchée (cf. ops/TEMPS-0.md item I5) - LE SITE NE
+ * DOIT PAS être annoncé publiquement tant que [ADRESSE] n'est pas remplacée.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Mentions légales - Chewbackk Studio"
+  description="Mentions légales et informations sur les données personnelles collectées par Chewbackk Studio."
+>
+  <section class="legal">
+    <div class="container legal__inner">
+      <p class="legal__eyebrow">
+        <span class="legal__idx">05</span> Mentions légales
+      </p>
+      <h1 class="legal__title">Mentions légales</h1>
+
+      <h2>Éditeur du site</h2>
+      <p>
+        Le site Chewbackk Studio est édité par Evan Bouvier, entrepreneur
+        individuel (micro-entreprise).
+      </p>
+      <dl class="legal__list">
+        <div><dt>SIRET</dt><dd>106 290 026 00017</dd></div>
+        <div><dt>SIREN</dt><dd>106 290 026</dd></div>
+        <div><dt>APE / NAF</dt><dd>6201Z - Programmation informatique</dd></div>
+        <div><dt>TVA</dt><dd>Non applicable, art. 293 B du CGI</dd></div>
+        <div><dt>Adresse</dt><dd>[ADRESSE]</dd></div>
+        <div><dt>Directeur de la publication</dt><dd>Evan Bouvier</dd></div>
+        <div>
+          <dt>Contact</dt>
+          <dd><a href="mailto:bouvierevan-contact@proton.me">bouvierevan-contact@proton.me</a></dd>
+        </div>
+      </dl>
+
+      <h2>Hébergement</h2>
+      <p>Le site est hébergé par :</p>
+      <p class="legal__address">
+        GitHub, Inc.<br />
+        88 Colin P. Kelly Jr. Street<br />
+        San Francisco, CA 94107<br />
+        États-Unis
+      </p>
+
+      <h2>Données personnelles</h2>
+      <p>
+        Le formulaire de devis (page <a href="/contact">Contact</a>) collecte
+        les données suivantes : nom, adresse email, et le contenu de votre
+        message (type de projet, description, budget, délai).
+      </p>
+      <p>
+        Ces données sont utilisées dans la seule finalité de répondre à votre
+        demande de devis. Elles sont transmises via
+        <a href="https://web3forms.com" target="_blank" rel="noopener noreferrer">Web3Forms</a>,
+        un service tiers qui achemine le message par email, et ne sont ni
+        revendues ni utilisées à d'autres fins.
+      </p>
+      <p>
+        Elles sont conservées le temps nécessaire pour traiter votre demande,
+        et au maximum 3 ans à compter de notre dernier échange si vous ne
+        devenez pas client.
+      </p>
+      <p>
+        Conformément au RGPD, vous disposez d'un droit d'accès, de
+        rectification et de suppression de vos données. Pour l'exercer,
+        écrivez à
+        <a href="mailto:bouvierevan-contact@proton.me">bouvierevan-contact@proton.me</a>.
+      </p>
+      <p>Le site ne dépose aucun cookie de suivi ni traceur tiers.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .legal {
+    padding-block: var(--section-pad);
+  }
+  .legal__inner {
+    max-width: 42rem;
+  }
+  .legal__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .legal__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .legal__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2rem, 1.4rem + 2.4vw, 3.2rem);
+    margin: 0 0 var(--sp-12);
+  }
+
+  .legal h2 {
+    font-size: var(--fs-step-2);
+    margin: var(--sp-12) 0 var(--sp-4);
+    border-top: 1px solid var(--c-line);
+    padding-top: var(--sp-8);
+  }
+  .legal h2:first-of-type {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
+  }
+  .legal p {
+    color: var(--c-ink-muted);
+    line-height: var(--lh-body);
+    margin: 0 0 var(--sp-4);
+  }
+  .legal a {
+    color: var(--c-ink);
+  }
+  .legal__address {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+  }
+
+  .legal__list {
+    display: grid;
+    gap: var(--sp-3);
+    margin: var(--sp-4) 0;
+  }
+  .legal__list > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-3);
+    font-size: var(--fs-step--1);
+    border-bottom: 1px solid var(--c-line);
+    padding-bottom: var(--sp-2);
+  }
+  .legal__list dt {
+    flex: none;
+    width: 14rem;
+    color: var(--c-ink-muted);
+  }
+  .legal__list dd {
+    margin: 0;
+    color: var(--c-ink);
+  }
+</style>

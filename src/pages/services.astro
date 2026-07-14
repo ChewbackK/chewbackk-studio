@@ -1,0 +1,218 @@
+---
+/**
+ * services.astro - détail des 4 catégories de services (brief §2).
+ * Pas de prix affichés : le devis est fait sur mesure via /contact.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const categories = [
+  {
+    num: "01",
+    title: "Sites web",
+    items: [
+      "Site vitrine (TPE, artisans, pros)",
+      "Landing page",
+      "Portfolio",
+      "Site avec back-end (espace client, e-commerce, réservation)",
+    ],
+  },
+  {
+    num: "02",
+    title: "Développement, automatisation et scripts",
+    items: [
+      "Application web",
+      "Scripts et automatisations",
+      "Bots (hors Discord)",
+      "Intégrations API",
+    ],
+  },
+  {
+    num: "03",
+    title: "Discord",
+    items: ["Configuration de serveur", "Bot Discord custom"],
+  },
+  {
+    num: "04",
+    title: "Autres",
+    items: ["Tout projet qui ne rentre pas dans les cases, sur devis"],
+  },
+];
+---
+
+<BaseLayout
+  title="Services - Chewbackk Studio"
+  description="Sites vitrines, applications, automatisations, bots Discord. Devis sur mesure, sans prix affichés à l'avance."
+>
+  <section class="page-head">
+    <div class="container">
+      <p class="page-head__eyebrow">
+        <span class="page-head__idx">02</span> Services
+      </p>
+      <h1 class="page-head__title">Des services à la carte</h1>
+      <p class="page-head__pitch">
+        Du site vitrine simple à l'application avec back-end. Pas de prix
+        affichés ici : chaque projet est différent, le devis se fait sur
+        mesure via le formulaire de contact.
+      </p>
+    </div>
+  </section>
+
+  <section class="cats">
+    <div class="container">
+      {
+        categories.map((c) => (
+          <article class="cat">
+            <div class="cat__head">
+              <span class="cat__num">{c.num}</span>
+              <h2 class="cat__title">{c.title}</h2>
+            </div>
+            <ul class="cat__items">
+              {c.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container cta__inner">
+      <h2>Un projet en tête ?</h2>
+      <p>
+        Décrivez-le en quelques lignes, vous recevez une réponse sous 48 h
+        avec une fourchette de budget indicative.
+      </p>
+      <a class="btn btn--cta" href="/contact">Démarrer un projet</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding-block: var(--section-pad) var(--sp-8);
+  }
+  .page-head__eyebrow,
+  .cat__num {
+    font-family: var(--font-mono);
+  }
+  .page-head__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .page-head__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .page-head__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .page-head__pitch {
+    margin-top: var(--sp-4);
+    max-width: 56ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .cats {
+    padding-block: var(--sp-8) var(--section-pad);
+  }
+  .cat {
+    display: grid;
+    gap: var(--sp-4);
+    padding-block: var(--sp-8);
+    border-top: 1px solid var(--c-line);
+  }
+  .cat:last-child {
+    border-bottom: 1px solid var(--c-line);
+  }
+  .cat__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--sp-4);
+  }
+  .cat__num {
+    color: var(--c-ink-muted);
+    font-size: var(--fs-step-0);
+  }
+  .cat__title {
+    font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.2rem);
+    margin: 0;
+  }
+  .cat__items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-2);
+    max-width: 48rem;
+  }
+  .cat__items li {
+    position: relative;
+    padding-left: var(--sp-4);
+    color: var(--c-ink-muted);
+  }
+  .cat__items li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: var(--r-pill);
+    background: var(--c-accent);
+  }
+
+  .cta {
+    padding-block: var(--sp-8) var(--section-pad);
+    border-top: 1px solid var(--c-line);
+  }
+  .cta__inner {
+    max-width: 40rem;
+  }
+  .cta__inner h2 {
+    font-size: var(--fs-step-2);
+    margin: 0 0 var(--sp-3);
+  }
+  .cta__inner p {
+    color: var(--c-ink-muted);
+    margin: 0 0 var(--sp-6);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-sm);
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn--cta {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn--cta:hover {
+    box-shadow: 0 12px 34px -10px rgba(var(--c-accent-rgb), 0.55);
+  }
+</style>
