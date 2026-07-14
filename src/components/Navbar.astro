@@ -24,7 +24,7 @@ const isActive = (href: string) =>
     </a>
 
     <nav aria-label="Navigation principale">
-      <ul class="nav__list">
+      <ul class="nav__list" id="nav-menu-list" data-nav-list>
         {
           links.map((link) => (
             <li>
@@ -40,12 +40,30 @@ const isActive = (href: string) =>
       </ul>
     </nav>
 
+    <button
+      class="nav__burger"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-menu-list"
+      aria-label="Ouvrir le menu"
+      data-nav-burger
+    >
+      <span class="nav__burger-bar" aria-hidden="true"></span>
+      <span class="nav__burger-bar" aria-hidden="true"></span>
+      <span class="nav__burger-bar" aria-hidden="true"></span>
+    </button>
+
     <a class="nav__cta" href="/contact">
       <span class="nav__cta-full">Démarrer un projet</span>
       <span class="nav__cta-short">Projet</span>
     </a>
   </div>
 </header>
+
+<script>
+  import { bootstrapNavMenu } from "../scripts/nav-menu";
+  bootstrapNavMenu();
+</script>
 
 <style>
   /* Header ferme : fond noir solide (pas de glass), bord franc + filet
@@ -161,11 +179,74 @@ const isActive = (href: string) =>
     display: none;
   }
 
-  /* Sous 640px : on masque les liens centraux (menu complet = tranche future),
-     on garde marque + CTA. Le footer expose toute la navigation entre-temps. */
+  /* Bouton burger : caché en desktop, affiché sous 640px (cf. media query).
+     Trois barres qui se transforment en croix via .is-open (posée par
+     nav-menu.ts sur le clic, cf. aria-expanded en écho). */
+  .nav__burger {
+    display: none;
+    flex: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  .nav__burger-bar {
+    display: block;
+    width: 1.35rem;
+    height: 2px;
+    background: var(--c-ink);
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
+  }
+  .nav__burger.is-open .nav__burger-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .nav__burger.is-open .nav__burger-bar:nth-child(2) {
+    opacity: 0;
+  }
+  .nav__burger.is-open .nav__burger-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  /* Sous 640px : les liens centraux passent dans le menu burger (déroulant
+     sous la nav, pleine largeur). Marque + CTA restent visibles dans le
+     bandeau. Le footer expose aussi toute la navigation, en secours. */
   @media (max-width: 640px) {
     .nav__list {
       display: none;
+    }
+    .nav__list.is-open {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      gap: 0;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-line);
+      padding: 0 var(--container-pad) var(--sp-4);
+    }
+    .nav__list.is-open li {
+      border-top: 1px solid var(--c-line);
+    }
+    .nav__list.is-open li:first-child {
+      border-top: none;
+    }
+    .nav__list.is-open a {
+      display: block;
+      padding-block: var(--sp-4);
+      font-size: var(--fs-step-0);
+    }
+    .nav__burger {
+      display: flex;
     }
     .nav__cta {
       padding: var(--sp-2) var(--sp-4);
@@ -179,10 +260,14 @@ const isActive = (href: string) =>
   }
 
   /* Sous 420px : on resserre fort pour éviter tout débordement horizontal
-     (marque + CTA doivent tenir dans 320px). */
+     (marque + burger + CTA doivent tenir dans 320px : mesuré, avec le tag
+     « studio » et les gaps sp-3 la barre débordait de 27px). */
   @media (max-width: 420px) {
     .nav__inner {
-      gap: var(--sp-3);
+      gap: var(--sp-2);
+    }
+    .nav__brand-tag {
+      display: none;
     }
     .nav__brand {
       font-size: var(--fs-step-0);
