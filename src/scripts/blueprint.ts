@@ -60,19 +60,27 @@ function splitWord(word: HTMLElement): HTMLElement[] {
  * PALIER (focus tenu à 1) — le mot démonté reste affiché à l'écran un moment
  * avant que le hero se libère.
  */
-const FOCUS_SPAN = 0.5;
+const FOCUS_SPAN = 0.35;
 function easeFocus(p: number): number {
   const t = Math.min(1, p / FOCUS_SPAN);
   return 1 - Math.pow(1 - t, 1.7);
 }
 
-function updateDeconstruct(chars: HTMLElement[], progress: number): void {
+/** Part du palier déjà parcourue : 0 tant que l'effet joue, puis 0→1. */
+function holdProgress(p: number): number {
+  return Math.max(0, (p - FOCUS_SPAN) / (1 - FOCUS_SPAN));
+}
+
+function updateDeconstruct(chars: HTMLElement[], progress: number, drift = 0): void {
   const spread = 0.5;
   const per = chars.length > 1 ? spread / (chars.length - 1) : 0;
   chars.forEach((char, i) => {
     const cp = Math.min(1, Math.max(0, (progress - i * per) / (1 - spread)));
     const sign = i % 2 === 0 ? -1 : 1;
-    char.style.transform = `translateY(${(cp * -0.55).toFixed(3)}em) rotate(${(cp * sign * 6).toFixed(2)}deg)`;
+    // `drift` (0→1 pendant le palier) : le mot démonté continue de dériver
+    // très légèrement vers le haut — chaque cran de scroll répond, le palier
+    // ne se lit pas comme un blocage.
+    char.style.transform = `translateY(${(cp * -0.55 - drift * 0.1).toFixed(3)}em) rotate(${(cp * sign * 6).toFixed(2)}deg)`;
     const isSig = char.classList.contains("hero__char--sig");
     char.style.color = isSig
       ? `rgba(var(--c-accent-rgb), ${(1 - cp * 0.82).toFixed(3)})`
@@ -351,10 +359,11 @@ function init(): void {
       trigger: hero,
       pin: true,
       start: 0,
-      // ~50% de viewport épinglés : l'effet sur la première moitié (soit
-      // l'équivalent des ~25% d'avant), puis palier (cf. easeFocus) — le
-      // mot démonté se contemple aussi longtemps que l'animation a duré.
-      end: () => Math.round(window.innerHeight * 0.5),
+      // ~75% de viewport épinglés : l'effet sur les premiers ~35% (soit
+      // l'équivalent des ~26% d'avant), puis un LONG palier (cf. easeFocus)
+      // — le mot démonté se contemple bien plus longtemps qu'il n'a mis à
+      // se démonter, avec une dérive lente pour garder le scroll vivant.
+      end: () => Math.round(window.innerHeight * 0.75),
       scrub: 0.3,
       onUpdate: (self) => {
         // Progression easée (sortie douce) : mappée linéairement, les
@@ -365,7 +374,7 @@ function init(): void {
         // Pendant l'entrée, les .from() possèdent les transforms des
         // lettres : la déconstruction n'écrit qu'une fois la composition
         // finie (rattrapage dans onComplete si on a scrollé entre-temps).
-        if (entryDone) updateDeconstruct(chars, eased);
+        if (entryDone) updateDeconstruct(chars, eased, holdProgress(self.progress));
       },
     });
   });
@@ -391,7 +400,10 @@ function init(): void {
       onComplete: () => {
         hero.classList.add("is-done");
         entryDone = true;
-        if (deconstructST) updateDeconstruct(chars, easeFocus(deconstructST.progress));
+        if (deconstructST) {
+          const p = deconstructST.progress;
+          updateDeconstruct(chars, easeFocus(p), holdProgress(p));
+        }
       },
     });
 
