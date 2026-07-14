@@ -54,9 +54,16 @@ function splitWord(word: HTMLElement): HTMLElement[] {
  * l'effet se joue entièrement à l'écran sur ~28% de viewport de scroll,
  * progression easée pour répondre franchement dès le premier cran.
  */
-/** Progression du pin → progression de l'effet (sortie douce, bornes exactes). */
+/**
+ * Progression du pin → progression de l'effet (sortie douce, bornes exactes).
+ * L'effet n'occupe que les premiers FOCUS_SPAN du pin : le reste est un
+ * PALIER (focus tenu à 1) — le mot démonté reste affiché à l'écran un moment
+ * avant que le hero se libère.
+ */
+const FOCUS_SPAN = 0.65;
 function easeFocus(p: number): number {
-  return 1 - Math.pow(1 - p, 1.7);
+  const t = Math.min(1, p / FOCUS_SPAN);
+  return 1 - Math.pow(1 - t, 1.7);
 }
 
 function updateDeconstruct(chars: HTMLElement[], progress: number): void {
@@ -344,7 +351,9 @@ function init(): void {
       trigger: hero,
       pin: true,
       start: 0,
-      end: () => Math.round(window.innerHeight * 0.28),
+      // ~40% de viewport épinglés : l'effet sur les premiers ~65% (soit
+      // l'équivalent des ~28% d'avant), puis palier (cf. easeFocus).
+      end: () => Math.round(window.innerHeight * 0.4),
       scrub: 0.3,
       onUpdate: (self) => {
         // Progression easée (sortie douce) : mappée linéairement, les
