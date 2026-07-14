@@ -84,7 +84,10 @@
   .hero {
     position: relative;
     isolation: isolate;
-    min-height: 100svh;
+    /* La navbar est en flux au-dessus : le hero complète l'écran EXACTEMENT
+       (navbar + hero = une page, pas 10-20% de plus). Le -1px = la bordure
+       basse de la nav. */
+    min-height: calc(100svh - var(--nav-h) - 1px);
     display: flex;
     align-items: center;
     overflow: clip;

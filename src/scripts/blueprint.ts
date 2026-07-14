@@ -47,12 +47,12 @@ function splitWord(word: HTMLElement): HTMLElement[] {
 }
 
 /**
- * Déconstruction au scroll (0→1, fourni par le ScrollTrigger épinglé sur le
- * hero) : chaque lettre perd son remplissage et laisse apparaître son tracé,
- * décalée dans l'ordre de lecture (démontage gauche→droite). Le hero est
- * épinglé le temps de l'effet (cf. init) : sans ça, le titre ne fait que
- * ~150-200px de haut et quitterait l'écran en un seul geste de scroll, bien
- * avant d'avoir fini de se démonter.
+ * Déconstruction au scroll (0→1, fourni par le ScrollTrigger du hero) :
+ * chaque lettre perd son remplissage et laisse apparaître son tracé, décalée
+ * dans l'ordre de lecture (démontage gauche→droite). Pas de pin : l'effet se
+ * joue pendant la sortie naturelle du hero, compressé sur les premiers ~22%
+ * de viewport (progression easée, cf. init) pour être bien visible avant que
+ * le titre ne quitte l'écran.
  */
 /** Progression du pin → progression de l'effet (sortie douce, bornes exactes). */
 function easeFocus(p: number): number {
@@ -327,32 +327,27 @@ function init(): void {
   hero.style.setProperty("--bp-draw", "0");
   let entryDone = false;
 
-  // Le pin (hero épinglé pendant la déconstruction) s'arme DÈS l'init, une
-  // frame plus tard : hors du dispatch `astro:page-load`, dont l'init de
-  // smooth-scroll tue tous les ScrollTriggers. Armé seulement à la fin de
-  // l'entrée (comme avant), le pin-spacer s'insérait ~1.7s après le
-  // chargement : layout shift, et un scroll pendant l'entrée emportait le
-  // hero à mi-composition puis le faisait sauter à la création du pin. Sans
-  // le pin, le titre (~150-200px de haut) quitterait de toute façon l'écran
-  // en un seul geste de scroll, avant d'avoir fini de se démonter.
+  // La déconstruction s'arme dès l'init, une frame plus tard : hors du
+  // dispatch `astro:page-load`, dont l'init de smooth-scroll tue tous les
+  // ScrollTriggers. PAS de pin : un hero épinglé occupe sa hauteur PLUS la
+  // distance d'épinglage dans le défilement (le hero « faisait plus qu'une
+  // page » et le scroll semblait bloqué). Ici l'effet chevauche la sortie
+  // naturelle du hero : il démarre au tout premier pixel de scroll (start
+  // calé sur la position du hero sous la navbar) et se joue pendant les
+  // premiers ~22% de viewport, tant que le titre est encore bien visible.
   gsap.registerPlugin(ScrollTrigger);
   armRaf = requestAnimationFrame(() => {
     armRaf = 0;
     if (myGen !== gen) return;
     deconstructST = ScrollTrigger.create({
       trigger: hero,
-      start: "top top",
-      // Distance courte : le pin ne doit pas allonger le hero au point que
-      // le scroll paraisse bloqué (~2-3 crans de molette suffisent).
-      end: () => `+=${Math.round(window.innerHeight * 0.28)}`,
-      pin: true,
+      start: () => `top ${Math.round(hero.offsetTop)}px`,
+      end: () => `+=${Math.round(window.innerHeight * 0.22)}`,
       scrub: 0.3,
       onUpdate: (self) => {
         // Progression easée (sortie douce) : mappée linéairement, les
-        // premiers ~15% de scroll ne bougeaient les lettres que de quelques
-        // px — impression de scroll mort, puis d'animation « en retard ».
-        // Là, le premier cran produit déjà un mouvement franc. Bornes
-        // exactes conservées (0→0, 1→1) : réversible, libération nette.
+        // premiers crans ne bougeraient les lettres que de quelques px.
+        // Bornes exactes conservées (0→0, 1→1) : réversible.
         const eased = easeFocus(self.progress);
         hero.style.setProperty("--bp-focus", eased.toFixed(3));
         // Pendant l'entrée, les .from() possèdent les transforms des

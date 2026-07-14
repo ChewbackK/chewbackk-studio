@@ -62,6 +62,9 @@
   /* ---- Layout ---- */
   --container: 72rem;
   --container-pad: clamp(1rem, 5vw, 2.5rem);
+  /* Hauteur de la barre de nav (en flux au-dessus du hero) : partagée pour
+     que le hero puisse compléter l'écran exactement (navbar + hero = 100svh). */
+  --nav-h: 4.25rem;
 
   /* ---- Rayons ---- */
   --r-sm: 6px;
