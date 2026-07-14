@@ -245,6 +245,13 @@
     text-transform: uppercase;
     color: rgba(var(--c-accent-rgb), 0.85);
   }
+  /* Plan allégé sur mobile : la cote vivante chevauchait le titre (le mot
+     occupe toute la largeur, sa lecture « Y xxx PX » n'a plus de place). */
+  @media (max-width: 640px) {
+    .hero__datum {
+      display: none;
+    }
+  }
 
   .hero__inner {
     position: relative;
@@ -355,7 +362,10 @@
   }
   .hero__block dt {
     flex: none;
-    width: 3.5em;
+    /* 4.25em : « Délai » en Martian Mono espacé 0.12em mesure ~4.12em
+       (mesuré au px), il débordait de l'ancienne boîte à 3.5em et collait
+       sa valeur. */
+    width: 4.25em;
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--c-ink-muted);

@@ -160,14 +160,18 @@ function buildPlan(
     cross(t.x, t.y + t.h, crossCol),
     cross(t.x + t.w, t.y + t.h, crossCol),
   );
-  // Cartouche (bloc-titre) en bas à droite.
-  const bx = W - 20;
-  const by = H - 84;
-  base.push(
-    mono(bx, by, "Chewbackk Studio", { anchor: "end", fill: a(0.5), size: 13 }),
-    mono(bx, by + 18, "Plan · héro · feuille 01", { anchor: "end", fill: a(0.42) }),
-    mono(bx, by + 36, `${W} × ${H} px · grille ${Math.round(cellPx)}`, { anchor: "end", fill: a(0.42) }),
-  );
+  // Cartouche (bloc-titre) en bas à droite. Sous 640px le bas du hero est
+  // occupé par les CTA pleine largeur : le cartouche s'écrivait dessus.
+  // Plan allégé sur mobile : grille + cadre + croix seulement.
+  if (W >= 640) {
+    const bx = W - 20;
+    const by = H - 84;
+    base.push(
+      mono(bx, by, "Chewbackk Studio", { anchor: "end", fill: a(0.5), size: 13 }),
+      mono(bx, by + 18, "Plan · héro · feuille 01", { anchor: "end", fill: a(0.42) }),
+      mono(bx, by + 36, `${W} × ${H} px · grille ${Math.round(cellPx)}`, { anchor: "end", fill: a(0.42) }),
+    );
+  }
 
   // ---- Couche CHAUDE (détail révélé par la lampe) ----
   const hot: string[] = [];
@@ -237,6 +241,9 @@ function positionDatum(hero: HTMLElement, datum: HTMLElement): void {
 
 /** Lecture live : la cote affiche la position réelle du titre à l'écran. */
 function updateDatum(hero: HTMLElement, datum: HTMLElement, read: HTMLElement | null): void {
+  // Masquée sous 640px (cf. CSS) : elle chevauchait le titre. Pas de mesure
+  // pour rien à chaque scroll.
+  if (datum.offsetParent === null) return;
   const word = hero.querySelector<HTMLElement>("[data-title-word]");
   if (!word) return;
   const top = word.getBoundingClientRect().top;
