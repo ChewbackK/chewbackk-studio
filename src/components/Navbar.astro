@@ -17,6 +17,7 @@ const isActive = (href: string) =>
 <a class="skip-link" href="#contenu">Aller au contenu</a>
 
 <header class="nav" transition:persist>
+  <div class="nav__scrim" data-nav-scrim aria-hidden="true"></div>
   <div class="container nav__inner">
     <a class="nav__brand" href="/" aria-label="Chewbackk Studio - accueil">
       <span class="nav__brand-name">Chewbackk</span>
@@ -82,6 +83,23 @@ const isActive = (href: string) =>
     align-items: center;
     gap: var(--sp-8);
     min-height: var(--nav-h);
+  }
+
+  /* Voile sous le menu mobile ouvert : la page passe en retrait, le
+     dropdown reste le seul plan lisible (sans lui, le hero et son plan
+     restaient à pleine luminosité sous les liens). Enfant du header :
+     sticky ne crée pas de containing block pour fixed, le voile couvre
+     bien le viewport ; z-index -1 le met sous la barre et le dropdown
+     dans la pile locale du header (elle-même au-dessus de la page). */
+  .nav__scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: rgba(var(--c-bg-rgb), 0.78);
+  }
+  .nav__scrim.is-open {
+    display: block;
   }
 
   /* Logotype verrouillé : « Chewbackk » (Archivo) + label mono « studio ».

@@ -103,6 +103,17 @@ function init(): void {
 }
 
 /**
+ * Gèle/relâche le smooth-scroll (menu mobile ouvert). Complète le
+ * `html.is-menu-open { overflow: hidden }` côté CSS : Lenis écoute la
+ * molette et animerait quand même le scroll virtuel. No-op sans instance
+ * (reduced-motion, ou appel avant l'init).
+ */
+export function scrollFreeze(frozen: boolean): void {
+  if (frozen) lenis?.stop();
+  else lenis?.start();
+}
+
+/**
  * Point d'entrée appelé une fois par le layout. N'attache que l'écouteur
  * `astro:page-load` (déclenché au premier chargement ET à chaque navigation).
  */

@@ -140,6 +140,13 @@ a:hover {
   border: 0;
 }
 
+/* ---- Menu mobile ouvert : page figée ----
+   Le scrim couvre la page, le dropdown est le seul plan actif. Bloque le
+   scroll natif (tactile compris) ; Lenis est gelé côté JS (scrollFreeze). */
+html.is-menu-open {
+  overflow: hidden;
+}
+
 /* ---- Reduced-motion : source de vérité côté CSS ----
    Neutralise transitions/animations AVANT même que le JS ne tourne, pour
    éviter tout flash de contenu masqué. Le JS (Lenis/canvas/GSAP) honore la
