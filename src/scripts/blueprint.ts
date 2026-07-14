@@ -60,7 +60,7 @@ function splitWord(word: HTMLElement): HTMLElement[] {
  * PALIER (focus tenu à 1) — le mot démonté reste affiché à l'écran un moment
  * avant que le hero se libère.
  */
-const FOCUS_SPAN = 0.65;
+const FOCUS_SPAN = 0.5;
 function easeFocus(p: number): number {
   const t = Math.min(1, p / FOCUS_SPAN);
   return 1 - Math.pow(1 - t, 1.7);
@@ -351,9 +351,10 @@ function init(): void {
       trigger: hero,
       pin: true,
       start: 0,
-      // ~40% de viewport épinglés : l'effet sur les premiers ~65% (soit
-      // l'équivalent des ~28% d'avant), puis palier (cf. easeFocus).
-      end: () => Math.round(window.innerHeight * 0.4),
+      // ~50% de viewport épinglés : l'effet sur la première moitié (soit
+      // l'équivalent des ~25% d'avant), puis palier (cf. easeFocus) — le
+      // mot démonté se contemple aussi longtemps que l'animation a duré.
+      end: () => Math.round(window.innerHeight * 0.5),
       scrub: 0.3,
       onUpdate: (self) => {
         // Progression easée (sortie douce) : mappée linéairement, les
