@@ -243,6 +243,13 @@ const timelines = [
     gap: var(--sp-2);
     font-size: var(--fs-step--1);
   }
+  /* min-width:auto des items de grille : sans ça, le plus long libellé
+     d'option du <select> (~484px) impose sa largeur à TOUT le formulaire
+     et le fait sortir de l'écran sur mobile. */
+  .quote__row,
+  .quote__field {
+    min-width: 0;
+  }
   .quote__field > span {
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -253,6 +260,8 @@ const timelines = [
   .quote__field input,
   .quote__field select,
   .quote__field textarea {
+    width: 100%;
+    min-width: 0;
     font: inherit;
     font-size: var(--fs-step-0);
     color: var(--c-ink);
