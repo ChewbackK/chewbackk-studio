@@ -1,5 +1,8 @@
 # PLAN-RESPONSIVE-MOBILE.md : plan de correction du responsive mobile
 
+> **Statut : exécuté** (commits `1f31cf3` à `831657b`, banc 7/7 OK).
+> Bilan et réserves : voir `RAPPORT-AUDIT-CHANGEMENTS.md`.
+
 Mission d'exécution pour l'agent en charge (constats mesurés, corrections
 décidées avec le propriétaire, protocole de vérification). Tous les chiffres
 ci-dessous ont été mesurés en émulation 385x817 et 320x640 (script
