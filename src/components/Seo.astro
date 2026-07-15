@@ -1,0 +1,63 @@
+---
+/**
+ * Seo.astro - métadonnées du <head> : titre, description, canonique, Open Graph.
+ * L'URL canonique dérive de `site` (astro.config.mjs). Inclut le preload de la
+ * webfont d'affichage (chemin critique du hero).
+ */
+interface Props {
+  title?: string;
+  description?: string;
+  /** Chemin de l'OG image dans /public (optionnel). */
+  ogImage?: string;
+}
+
+const {
+  title = "Chewbackk Studio - Développement web sur mesure",
+  description =
+    "Chewbackk Studio - Evan Bouvier, développeur web freelance. Sites vitrines, applications, automatisations et bots, à prix accessibles. Réponse sous 48 h.",
+  ogImage,
+} = Astro.props;
+
+// URL canonique absolue (Astro.site est défini dans astro.config.mjs).
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+
+<title>{title}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+
+<!-- Préchargement des webfonts du hero (chemin critique) : Archivo pour le
+     titre XXL, Martian Mono pour les cotes/annotations du plan. -->
+<link
+  rel="preload"
+  href="/fonts/Archivo-Variable.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+<link
+  rel="preload"
+  href="/fonts/MartianMono-Variable.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+/>
+
+<!-- Open Graph / réseaux sociaux -->
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="fr_FR" />
+<meta property="og:site_name" content="Chewbackk Studio" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonical} />
+{ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+<meta name="twitter:card" content={ogImageUrl ? "summary_large_image" : "summary"} />
+<meta name="theme-color" content="#0a0a0a" />

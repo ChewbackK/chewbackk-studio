@@ -1,0 +1,88 @@
+/* tokens.css - variables de design de Chewbackk Studio.
+   Direction : noir & blanc + UN seul accent vif. Quasi-monochrome, premium,
+   intemporel. Tous les couples texte/fond passent WCAG AA (contrastes vérifiés
+   en commentaire). Thème sombre unique pour l'instant. */
+
+:root {
+  /* ---- Accent (couleur unique de la marque) ----
+     Réservé au k signature, aux liens, et au fond des CTA. Un seul point de
+     vérité : changer ces 2 lignes suffit à reteinter tout le site. */
+  --c-accent: #c6f24e;        /* vert acide - 15.3:1 /bg */
+  --c-accent-rgb: 198, 242, 78;
+
+  /* ---- Neutres ---- */
+  --c-bg: #0a0a0a;            /* fond page (noir profond) */
+  --c-bg-elev: #141414;       /* surfaces élevées / cartes */
+  --c-ink: #f4f2ee;           /* texte principal (blanc cassé chaud) - 17.7:1 /bg */
+  --c-ink-muted: #a8a6a1;     /* texte secondaire - ~8.7:1 /bg */
+  --c-line: #2a2a2a;          /* bordures / filets */
+  --c-accent-ink: #0a0a0a;    /* texte sur fond accent (CTA) - ≥6.4:1 selon accent */
+  --c-focus: var(--c-accent); /* anneau focus-visible = l'accent */
+
+  --c-bg-rgb: 10, 10, 10;
+  --c-ink-rgb: 244, 242, 238;
+
+  /* ---- Typographie ----
+     Display : Archivo (grotesque, graisse jusqu'à 900) pour le titre XXL.
+     Mono : Martian Mono, l'encre technique du plan (cotes, annotations, labels).
+     Space Grotesk a été retirée (trop « défaut »). */
+  --font-display: "Archivo", system-ui, sans-serif; /* titres */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial,
+    sans-serif; /* corps */
+  --font-mono: "Martian Mono", ui-monospace, "SF Mono", Menlo, Consolas,
+    monospace;
+
+  /* Échelle fluide. Les min tiennent à 320px sans débordement. */
+  --fs-step--1: 0.833rem; /* mentions légales / notes */
+  --fs-step-0: 1rem;      /* corps */
+  --fs-step-1: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
+  --fs-step-2: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);  /* tagline */
+  --fs-step-3: clamp(2.2rem, 1.5rem + 3vw, 3.6rem);
+  --fs-display: clamp(2.8rem, 1.6rem + 6vw, 6rem);     /* titre hero */
+
+  --lh-tight: 1.05; /* display */
+  --lh-snug: 1.25;
+  --lh-body: 1.6;
+
+  --tracking-tight: -0.02em;
+  --tracking-wide: 0.08em;
+
+  /* ---- Espacement ---- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+  --sp-24: 6rem;
+  --section-pad: clamp(3rem, 8vw, 7rem);
+
+  /* ---- Layout ---- */
+  --container: 72rem;
+  --container-pad: clamp(1rem, 5vw, 2.5rem);
+  /* Hauteur de la barre de nav (en flux au-dessus du hero) : partagée pour
+     que le hero puisse compléter l'écran exactement (navbar + hero = 100svh). */
+  --nav-h: 4.25rem;
+
+  /* ---- Rayons ---- */
+  --r-sm: 6px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* ---- Mouvement ---- */
+  --dur-fast: 160ms;
+  --dur: 320ms;
+  --dur-slow: 640ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* ---- Profondeur (z-index) ---- */
+  --z-canvas: 0;
+  --z-scrim: 1;
+  --z-content: 2;
+  --z-nav: 50;
+  --z-skip: 100;
+}

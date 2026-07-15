@@ -1,0 +1,420 @@
+---
+/**
+ * contact.astro - devis + contact direct (brief §4).
+ * Deux sections : formulaire de devis (Web3Forms, cf. src/scripts/contact-form.ts)
+ * et contact simple par email. RGPD : consentement obligatoire non pré-coché,
+ * mention de confidentialité renvoyée vers /mentions-legales.
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const projectTypes = [
+  {
+    value: "sites-web",
+    label: "Site web (vitrine, landing, portfolio, back-end)",
+    budgetMin: 300,
+    budgetMax: 3000,
+    budgetStep: 100,
+  },
+  {
+    value: "dev-auto",
+    label: "Développement & automatisation (appli, scripts, bots, API)",
+    budgetMin: 100,
+    budgetMax: 2000,
+    budgetStep: 100,
+  },
+  {
+    value: "discord",
+    label: "Discord (serveur, bot)",
+    budgetMin: 50,
+    budgetMax: 1000,
+    budgetStep: 50,
+  },
+  {
+    value: "autre",
+    label: "Autre projet",
+    budgetMin: 300,
+    budgetMax: 5000,
+    budgetStep: 100,
+  },
+];
+const timelines = [
+  { value: "asap", label: "Dès que possible" },
+  { value: "1-mois", label: "Dans le mois" },
+  { value: "3-mois", label: "Dans les 3 mois" },
+  { value: "flexible", label: "Pas pressé, à voir ensemble" },
+];
+---
+
+<BaseLayout
+  title="Contact - Chewbackk Studio"
+  description="Demandez un devis pour votre projet web ou écrivez directement à Chewbackk Studio. Réponse garantie sous 48 h."
+>
+  <section class="page-head">
+    <div class="container">
+      <p class="page-head__eyebrow">
+        <span class="page-head__idx">04</span> Contact
+      </p>
+      <h1 class="page-head__title">Parlons de votre projet</h1>
+      <p class="page-head__pitch">
+        Un formulaire pour poser les bases, ou un email direct si vous préférez
+        aller droit au but. Réponse sous 48 h, dans les deux cas.
+      </p>
+    </div>
+  </section>
+
+  <section class="quote">
+    <div class="container quote__inner">
+      <h2 class="quote__title reveal">Demander un devis</h2>
+
+      <form class="quote__form reveal" data-quote-form novalidate>
+        <div class="quote__row">
+          <label class="quote__field">
+            <span>Nom</span>
+            <input type="text" name="name" required autocomplete="name" />
+          </label>
+          <label class="quote__field">
+            <span>Email</span>
+            <input type="email" name="email" required autocomplete="email" />
+          </label>
+        </div>
+
+        <label class="quote__field">
+          <span>Type de projet</span>
+          <select name="project_type" required data-project-type>
+            <option value="" selected disabled>Choisissez une catégorie</option>
+            {
+              projectTypes.map((p) => (
+                <option
+                  value={p.value}
+                  data-opt-budget-min={p.budgetMin}
+                  data-opt-budget-max={p.budgetMax}
+                  data-opt-budget-step={p.budgetStep}
+                >
+                  {p.label}
+                </option>
+              ))
+            }
+          </select>
+        </label>
+
+        <label class="quote__field">
+          <span>Décrivez votre projet</span>
+          <textarea
+            name="message"
+            rows="5"
+            required
+            placeholder="Le besoin, pour qui, les fonctionnalités si vous les connaissez déjà..."
+          ></textarea>
+        </label>
+
+        <div class="quote__row">
+          <div class="quote__field">
+            <span>Budget approximatif</span>
+            <div class="quote__slider" data-budget-slider>
+              <input type="range" data-budget-input disabled aria-describedby="budget-value" />
+              <div class="quote__slider-scale">
+                <span data-budget-min>-</span>
+                <span data-budget-max>-</span>
+              </div>
+            </div>
+            <p class="quote__slider-value" id="budget-value" data-budget-value>
+              Choisissez d'abord un type de projet.
+            </p>
+            <input type="hidden" name="budget" data-budget-hidden value="" />
+          </div>
+          <label class="quote__field">
+            <span>Délai souhaité</span>
+            <select name="timeline" required>
+              <option value="" selected disabled>Choisissez un délai</option>
+              {timelines.map((t) => <option value={t.value}>{t.label}</option>)}
+            </select>
+          </label>
+        </div>
+
+        <p class="quote__disclaimer">
+          Budget et délai sont des indications pour cadrer la discussion, pas
+          un engagement de votre part. Estimation indicative - le devis ferme
+          est établi après un échange sur votre projet.
+        </p>
+
+        <label class="quote__consent">
+          <input type="checkbox" name="consent" required />
+          <span>
+            J'accepte que mes données soient utilisées pour être recontacté
+            concernant ma demande. Elles ne sont ni revendues ni utilisées à
+            d'autres fins. Détails dans les
+            <a href="/mentions-legales">mentions légales</a>.
+          </span>
+        </label>
+
+        <!-- Honeypot anti-spam : invisible et hors tabulation pour un humain. -->
+        <label class="quote__honeypot" aria-hidden="true">
+          Ne remplissez pas ce champ
+          <input type="text" name="company" tabindex="-1" autocomplete="off" />
+        </label>
+
+        <div class="quote__submit-row">
+          <button type="submit" class="btn btn--cta" data-form-submit>
+            Envoyer ma demande
+          </button>
+          <p class="quote__status" data-form-status role="status" aria-live="polite">
+          </p>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="direct">
+    <div class="container direct__inner reveal">
+      <h2>Vous préférez un email direct ?</h2>
+      <p>Pas de formulaire, pas de détour. Réponse garantie sous 48 h, pas de téléphone.</p>
+      <a class="direct__email" href="mailto:bouvierevan-contact@proton.me">
+        bouvierevan-contact@proton.me
+      </a>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { bootstrapContactForm } from "../scripts/contact-form";
+  bootstrapContactForm();
+</script>
+
+<style>
+  .page-head {
+    padding-block: var(--section-pad) var(--sp-8);
+  }
+  .page-head__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .page-head__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .page-head__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .page-head__pitch {
+    margin-top: var(--sp-4);
+    max-width: 56ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .quote {
+    padding-block: var(--sp-8) var(--section-pad);
+  }
+  .quote__title {
+    font-size: var(--fs-step-2);
+    margin: 0 0 var(--sp-8);
+  }
+  .quote__form {
+    display: grid;
+    gap: var(--sp-6);
+    max-width: 44rem;
+  }
+  .quote__row {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  @media (min-width: 640px) {
+    .quote__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .quote__field {
+    display: grid;
+    gap: var(--sp-2);
+    font-size: var(--fs-step--1);
+  }
+  /* min-width:auto des items de grille : sans ça, le plus long libellé
+     d'option du <select> (~484px) impose sa largeur à TOUT le formulaire
+     et le fait sortir de l'écran sur mobile. */
+  .quote__row,
+  .quote__field {
+    min-width: 0;
+  }
+  .quote__field > span {
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+  }
+  .quote__field input,
+  .quote__field select,
+  .quote__field textarea {
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+    font-size: var(--fs-step-0);
+    color: var(--c-ink);
+    background: var(--c-bg-elev);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: var(--sp-3);
+    resize: vertical;
+  }
+  .quote__slider {
+    display: grid;
+    gap: var(--sp-2);
+  }
+  .quote__slider input[type="range"] {
+    width: 100%;
+    accent-color: var(--c-accent);
+    padding: 0;
+    background: none;
+    border: none;
+  }
+  .quote__slider input[type="range"]:disabled {
+    opacity: 0.4;
+  }
+  .quote__slider-scale {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-mono);
+    font-size: 0.78em;
+    color: var(--c-ink-muted);
+  }
+  .quote__slider-value {
+    margin: 0;
+    font-size: var(--fs-step-0);
+    color: var(--c-accent);
+    min-height: 1.4em;
+  }
+
+  .quote__field input:focus-visible,
+  .quote__field select:focus-visible,
+  .quote__field textarea:focus-visible {
+    outline: 2px solid var(--c-focus);
+    outline-offset: 1px;
+  }
+
+  .quote__disclaimer {
+    margin: 0;
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+  }
+
+  .quote__consent {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sp-3);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+  }
+  .quote__consent input {
+    flex: none;
+    width: 1.15em;
+    height: 1.15em;
+    margin-top: 0.2em;
+    accent-color: var(--c-accent);
+  }
+  .quote__consent a {
+    color: var(--c-ink);
+  }
+
+  /* Honeypot : hors écran, jamais visible, jamais atteint au clavier. */
+  .quote__honeypot {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .quote__submit-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sp-4);
+  }
+  .quote__status {
+    margin: 0;
+    font-size: var(--fs-step--1);
+  }
+  .quote__status[data-kind="success"] {
+    color: var(--c-accent);
+  }
+  .quote__status[data-kind="error"] {
+    color: #ff8a8a;
+  }
+  .quote__status[data-kind="sending"] {
+    color: var(--c-ink-muted);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-sm);
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--fs-step-0);
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      opacity var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn--cta {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn--cta:hover:not(:disabled) {
+    box-shadow: 0 12px 34px -10px rgba(var(--c-accent-rgb), 0.55);
+  }
+
+  .direct {
+    padding-block: var(--sp-8) var(--section-pad);
+    border-top: 1px solid var(--c-line);
+  }
+  .direct__inner {
+    max-width: 40rem;
+  }
+  .direct__inner h2 {
+    font-size: var(--fs-step-2);
+    margin: 0 0 var(--sp-3);
+  }
+  .direct__inner p {
+    color: var(--c-ink-muted);
+    margin: 0 0 var(--sp-4);
+  }
+  .direct__email {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step-1);
+    color: var(--c-accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(var(--c-accent-rgb), 0.4);
+  }
+  .direct__email:hover {
+    border-bottom-color: var(--c-accent);
+  }
+</style>

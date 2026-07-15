@@ -1,0 +1,504 @@
+---
+/**
+ * Hero.astro - typo XXL plein cadre. Le nom « Chewbackk » EST le visuel.
+ * Contraste d'échelle brutal : nom géant / texte secondaire minuscule.
+ * Le dernier « k » est l'élément signature (couleur accent, se verrouille
+ * en dernier à l'animation). Un seul <h1> sémantique (aria-label sur le nom).
+ */
+---
+
+<section class="hero">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="hero__reveal" aria-hidden="true"></div>
+
+  <!-- « Studio » : hors conteneur, positionné par rapport au hero pleine
+       largeur, pour occuper l'espace vide réel à droite du titre. -->
+  <span class="hero__studio-wrap" aria-hidden="true">
+    <span class="hero__studio">Studio</span>
+  </span>
+
+  <div class="container hero__grid">
+    <p class="hero__eyebrow" data-hero-fade>Développeur web freelance</p>
+
+    <h1 class="hero__name" aria-label="Chewbackk Studio">
+      <span class="hero__line"><span class="hero__line-inner">Chew</span></span>
+      <span class="hero__line hero__line--two">
+        <span class="hero__line-inner"
+          >Back<span class="hero__sig">K</span></span
+        >
+      </span>
+    </h1>
+
+    <div class="hero__bottom">
+      <div class="hero__actions" data-hero-fade>
+        <a class="btn btn--cta" href="/contact">Démarrer un projet</a>
+        <a class="btn btn--ghost" href="/services">Voir les services</a>
+      </div>
+      <div class="hero__intro">
+        <p class="hero__kicker" data-hero-fade>
+          <span class="hero__kicker-rule" aria-hidden="true"></span>
+          Studio de dev - Evan Bouvier
+        </p>
+        <p class="hero__tagline" data-hero-fade>
+          Du site vitrine à l'application complète. Soigné, personnalisé,
+          évolutif - et à prix accessible.
+        </p>
+        <p class="hero__meta" data-hero-fade>Réponse sous 48&nbsp;h.</p>
+      </div>
+    </div>
+  </div>
+
+  <span class="hero__scrollcue" aria-hidden="true" data-hero-fade>défiler</span>
+</section>
+
+<script>
+  import { bootstrapHeroIntro } from "../scripts/hero-intro";
+  import { bootstrapHeroCursor } from "../scripts/hero-cursor";
+  import { bootstrapHeroStudio } from "../scripts/hero-studio";
+  bootstrapHeroIntro();
+  bootstrapHeroCursor();
+  bootstrapHeroStudio();
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    /* `clip` sur X seulement : on masque le débordement horizontal du titre,
+       MAIS on ne rogne pas verticalement. Si le contenu dépasse 100svh (titre
+       géant + bloc droite sur écran peu haut), la section grandit et la page
+       défile au lieu de couper le bas (défiler + CTA restent atteignables). */
+    overflow-x: clip;
+    /* Marge basse pour que le bas du contenu ne colle pas au bord. */
+    padding-bottom: var(--sp-8);
+  }
+
+  /* ---- Fond travaillé ----
+     Couches (du fond vers l'avant) :
+       1. dégradé vertical sombre + lueur d'accent ancrée en haut-gauche
+       2. fine grille verticale (structure de "studio", très discrète)
+       3. vignette qui assombrit les bords (profondeur)
+       4. grain fin
+     La typo reste la star : tout est volontairement de faible intensité. */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      radial-gradient(
+        65% 60% at 8% -8%,
+        rgba(var(--c-accent-rgb), 0.16) 0%,
+        transparent 58%
+      ),
+      linear-gradient(180deg, #111311 0%, var(--c-bg) 55%);
+  }
+  /* Grille verticale fine (lignes espacées), fondue sur les bords. */
+  .hero__bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      90deg,
+      rgba(var(--c-ink-rgb), 0.04) 0,
+      rgba(var(--c-ink-rgb), 0.04) 1px,
+      transparent 1px,
+      transparent 7.5rem
+    );
+    -webkit-mask-image: radial-gradient(
+      80% 80% at 50% 40%,
+      #000 0%,
+      transparent 90%
+    );
+    mask-image: radial-gradient(80% 80% at 50% 40%, #000 0%, transparent 90%);
+  }
+  /* Vignette + grain fin (SVG inline, aucune requête réseau). */
+  .hero__bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(
+        120% 120% at 50% 50%,
+        transparent 55%,
+        rgba(0, 0, 0, 0.55) 100%
+      ),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.6;
+  }
+
+  /* Révélation au curseur : une trame d'accent cachée, dévoilée seulement
+     autour du pointeur via un masque radial (effet "projecteur").
+     Position pilotée par hero-cursor.ts via --mx/--my (px). Derrière le texte. */
+  .hero__reveal {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0; /* invisible tant que le curseur n'est pas entré (géré au JS) */
+    transition: opacity var(--dur-slow) var(--ease-out);
+    /* La trame : grille fine d'accent + une lueur d'accent au centre. */
+    background-image:
+      radial-gradient(
+        circle at var(--mx, 50%) var(--my, 50%),
+        rgba(var(--c-accent-rgb), 0.16) 0%,
+        transparent 14%
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(var(--c-accent-rgb), 0.5) 0,
+        rgba(var(--c-accent-rgb), 0.5) 1px,
+        transparent 1px,
+        transparent 2.2rem
+      ),
+      repeating-linear-gradient(
+        90deg,
+        rgba(var(--c-accent-rgb), 0.5) 0,
+        rgba(var(--c-accent-rgb), 0.5) 1px,
+        transparent 1px,
+        transparent 2.2rem
+      );
+    /* Masque : seul un disque autour du curseur laisse voir la trame. */
+    -webkit-mask-image: radial-gradient(
+      circle at var(--mx, 50%) var(--my, 50%),
+      #000 0%,
+      rgba(0, 0, 0, 0.35) 9%,
+      transparent 16%
+    );
+    mask-image: radial-gradient(
+      circle at var(--mx, 50%) var(--my, 50%),
+      #000 0%,
+      rgba(0, 0, 0, 0.35) 9%,
+      transparent 16%
+    );
+  }
+  .hero__reveal.is-active {
+    opacity: 1;
+  }
+
+  .hero__grid {
+    width: 100%;
+    /* Padding vertical réduit/fluide : sur les écrans peu hauts, évite que le
+       bloc de droite (tagline + CTA) ne passe sous la ligne de flottaison. */
+    padding-block: clamp(var(--sp-8), 6vh, var(--sp-16));
+  }
+
+  .hero__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+
+  /* ---- Le nom géant ---- */
+  .hero__name {
+    position: relative; /* contexte de positionnement pour « Studio » */
+    /* Titre volontairement très grand (parti pris plein cadre), mais calibré
+       pour ne pas chevaucher « Studio » ni déborder verticalement aux largeurs
+       desktop courantes. La règle « écran court » plus bas le tempère sur les
+       laptops peu hauts. */
+    font-size: clamp(4rem, 17vw, 15rem);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
+    margin: 0;
+    /* Débordé à gauche, à mi-chemin entre le bord du contenu et le bord de
+       l'écran : on annule le padding du conteneur PUIS on tire d'environ la
+       moitié de la gouttière (uniquement quand l'écran dépasse le conteneur,
+       sinon 0 → pas de débordement hors écran sur les largeurs moyennes).
+       Mord aussi hors conteneur à droite → tension plein cadre. */
+    margin-left: calc(
+      -1 * (var(--container-pad) + max(0px, (100vw - var(--container)) / 8))
+    );
+    margin-right: calc(var(--container-pad) * -1);
+  }
+
+  /* Chaque ligne est un masque pendant l'intro : l'inner monte depuis le bas.
+     Une fois l'anim finie (.is-done), on retire le clip pour que la lueur du
+     k au survol ne soit pas rognée par le masque. */
+  .hero__line {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.02em; /* évite le rognage des jambages */
+  }
+  .hero.is-done .hero__line {
+    overflow: visible;
+  }
+  .hero__line-inner {
+    display: block;
+    position: relative;
+    z-index: 2; /* au-dessus de « Studio » → il en surgit par derrière */
+    will-change: transform;
+  }
+
+  /* Anti-flash : si JS actif ET mouvement permis, on masque l'état initial
+     jusqu'à ce que GSAP prenne la main. On utilise visibility/opacity - PAS
+     `transform` - pour ne pas polluer la base de transform que GSAP lit (sinon
+     le yPercent s'anime par rapport à cette base et ne revient pas à zéro).
+     Sans JS ou en reduced-motion, tout reste visible d'emblée. */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html.js) .hero__name {
+      visibility: hidden;
+    }
+    :global(html.js) .hero__sig,
+    :global(html.js) [data-hero-fade] {
+      opacity: 0;
+    }
+  }
+
+  /* 2e ligne : conteneur de référence pour positionner « Studio » qui surgit
+     de derrière le nom et file vers la droite. */
+  .hero__line--two {
+    position: relative;
+  }
+
+  /* Conteneur de « Studio » : positionne et centre verticalement (entre
+     « Chew » et « BackK »), ancré à droite. C'est LUI qui porte le centrage
+     (translateY) → le <span> intérieur garde son transform libre pour GSAP
+     (reveal + flottement) sans casser le centrage. */
+  /* « Studio » occupe l'espace vide réel à droite du titre. Ancré au hero
+     pleine largeur (pas au conteneur centré). Son CENTRE est posé à ~70% de la
+     largeur de l'écran : le titre vit à gauche, donc pas de chevauchement,
+     quelle que soit la largeur. Centré verticalement (entre Chew et BackK). */
+  .hero__studio-wrap {
+    position: absolute;
+    left: 70%;
+    /* Calé verticalement sur la séparation « Chew » / « BackK » (≈ 38% de la
+       hauteur du hero), pas au centre du bloc. */
+    top: 38%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* « Studio » : police différente (mono), GROS. Le JS l'anime (depuis derrière
+     le nom → droite, puis flottement). Sans JS / reduced-motion, il est posé
+     directement à sa place visible. */
+  .hero__studio {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: clamp(3.6rem, 10.8vw, 9rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    will-change: transform, opacity;
+
+    /* Mise en valeur subtile : dégradé dans les verts (clair en haut → accent
+       en bas) clippé sur le texte, + une lueur douce qui donne du relief.
+       Pas d'animation : élégant et discret, ne vole pas la vedette au k. */
+    color: var(--c-accent); /* fallback si background-clip non supporté */
+    background: linear-gradient(
+      170deg,
+      #e6ff9c 0%,
+      var(--c-accent) 48%,
+      #93c93a 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 6px 18px rgba(var(--c-accent-rgb), 0.28));
+  }
+  :global(html.js) .hero__studio {
+    opacity: 0;
+  }
+
+  /* Le « k » signature : réagit au survol DU k seul (pas de tout le titre).
+     `display:inline-block` borne la zone au glyphe ; on autorise le hover
+     directement dessus pour ne plus déclencher « de loin ».
+     La lueur au survol est un text-shadow (épouse le glyphe, AUCUN bord de
+     boîte - contrairement à drop-shadow qui était rogné par la couche). */
+  .hero__sig {
+    color: var(--c-accent);
+    display: inline-block;
+    cursor: pointer;
+    will-change: transform;
+    transition:
+      transform var(--dur) var(--ease-out),
+      text-shadow var(--dur) var(--ease-out);
+  }
+  .hero__sig:hover {
+    transform: translateY(-0.04em) rotate(-4deg) scale(1.06);
+    text-shadow:
+      0 0 18px rgba(var(--c-accent-rgb), 0.55),
+      0 0 42px rgba(var(--c-accent-rgb), 0.35);
+  }
+
+  /* ---- Bas du hero : texte à gauche, boutons à l'opposé (droite) ----
+     Remplit le bas sur toute la largeur (sous le titre ET sous STUDIO) pour
+     éviter le vide en bas à gauche. */
+  .hero__bottom {
+    margin-top: var(--sp-12);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-8);
+  }
+  .hero__intro {
+    max-width: 46ch;
+  }
+
+  /* Petit intitulé avec filet d'accent : signale une colonne structurée. */
+  .hero__kicker {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-4);
+    font-size: var(--fs-step--1);
+    letter-spacing: 0.04em;
+    color: var(--c-ink-muted);
+  }
+  .hero__kicker-rule {
+    flex: none;
+    width: var(--sp-8);
+    height: 2px;
+    background: var(--c-accent);
+  }
+
+  .hero__tagline {
+    font-size: var(--fs-step-1);
+    color: var(--c-ink);
+    line-height: var(--lh-snug);
+  }
+  .hero__meta {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+  }
+
+  .hero__actions {
+    margin-top: var(--sp-6);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+
+  /* Indice de défilement, discret, en bas. */
+  .hero__scrollcue {
+    position: absolute;
+    bottom: var(--sp-6);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: var(--fs-step--1);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--c-ink-muted);
+    opacity: 0.7;
+  }
+
+  /* ---- Boutons ---- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-pill);
+    font-weight: 600;
+    text-decoration: none;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out),
+      background-color var(--dur-fast) var(--ease-out),
+      border-color var(--dur-fast) var(--ease-out);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  /* CTA plein : lift + halo d'accent au survol. */
+  .btn--cta {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn--cta:hover {
+    color: var(--c-accent-ink);
+    box-shadow: 0 10px 30px -8px rgba(var(--c-accent-rgb), 0.5);
+  }
+  /* CTA fantôme : le contour passe à l'accent + léger fond teinté au survol. */
+  .btn--ghost {
+    border: 1px solid var(--c-line);
+    color: var(--c-ink);
+  }
+  .btn--ghost:hover {
+    color: var(--c-ink);
+    border-color: var(--c-accent);
+    background: rgba(var(--c-accent-rgb), 0.08);
+  }
+
+  /* Sur grand écran : on aligne les boutons à droite, à hauteur du bas du
+     bloc texte. Le bloc texte garde un filet d'accent (le kicker-rule). */
+  @media (min-width: 900px) {
+    .hero__actions {
+      margin-top: 0; /* l'alignement vient de align-items:flex-end du parent */
+    }
+  }
+
+  /* Écrans larges mais PEU HAUTS (laptops 768–800px) : le titre géant + la
+     colonne de droite ne tiennent pas dans la hauteur → on réduit le titre et
+     on resserre les espacements pour garder les CTA au-dessus de la ligne de
+     flottaison. */
+  @media (min-width: 900px) and (max-height: 940px) {
+    .hero__name {
+      font-size: clamp(4rem, 13vw, 11rem);
+    }
+    .hero__studio {
+      font-size: clamp(3rem, 8vw, 6.5rem);
+    }
+    .hero__grid {
+      padding-block: var(--sp-6);
+    }
+  }
+
+  /* Quand la hauteur est trop faible, le contenu peut dépasser : on masque
+     l'indice « défiler » (sinon il chevauche le bas du contenu). */
+  @media (max-height: 820px) {
+    .hero__scrollcue {
+      display: none;
+    }
+  }
+
+  /* En layout empilé (sous 900px), on remet le TEXTE avant les BOUTONS : sur
+     mobile on veut le pitch puis le CTA, pas l'inverse. (Sur grand écran les
+     boutons sont à gauche et le texte à droite, ordre source conservé.) */
+  @media (max-width: 899px) {
+    .hero__intro {
+      order: 1;
+    }
+    .hero__actions {
+      order: 2;
+    }
+  }
+
+  /* À 320–480px : CTA pleine largeur, nom resserré mais toujours imposant.
+     On annule les marges négatives (pas de gouttière à récupérer ici) pour
+     éviter tout débordement horizontal. */
+  @media (max-width: 480px) {
+    .hero__name {
+      letter-spacing: -0.03em;
+      margin-left: 0;
+      margin-right: 0;
+      font-size: clamp(3.4rem, 17vw, 5rem);
+    }
+    /* « Studio » plus petit et calé à droite, à la hauteur du titre, sans
+       chevaucher les lettres ni déborder. (Le wrap est ancré au hero pleine
+       largeur : on l'aligne à droite via left/translateX.) */
+    .hero__studio-wrap {
+      left: auto;
+      right: var(--container-pad);
+      top: 38%;
+      transform: translateY(-50%);
+    }
+    .hero__studio {
+      font-size: clamp(1.5rem, 9vw, 2.6rem);
+    }
+    .hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .btn {
+      width: 100%;
+    }
+  }
+</style>

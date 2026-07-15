@@ -1,0 +1,169 @@
+/* globals.css - reset léger, styles de base, @font-face, accessibilité.
+   Importe tokens.css en amont (fait dans le layout). */
+
+/* ---- Webfonts self-hostées (woff2 variables, subset latin+FR) ----
+   Archivo : grotesque à fort caractère, graisse jusqu'à 900 pour le titre XXL.
+   Martian Mono : mono technique, sert d'« encre » aux cotes et annotations du
+   plan (direction Blueprint). Les deux sous licence OFL (cf. src/fonts/). */
+@font-face {
+  font-family: "Archivo";
+  src: url("/fonts/Archivo-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Martian Mono";
+  src: url("/fonts/MartianMono-Variable.woff2") format("woff2");
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---- Reset ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* On NE met PAS scroll-behavior: smooth ici : le smooth est géré par Lenis
+     (et désactivé proprement en reduced-motion). */
+}
+
+body {
+  min-height: 100svh;
+  background-color: var(--c-bg);
+  color: var(--c-ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-step-0);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+picture,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--c-accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+a:hover {
+  color: var(--c-accent);
+}
+
+/* ---- Layout primitives ---- */
+.container {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
+}
+
+/* ---- Focus visible (anneau cyan haut contraste, net sur fond chargé) ---- */
+:focus-visible {
+  outline: 3px solid var(--c-focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---- Skip link (apparaît au focus clavier) ---- */
+.skip-link {
+  position: fixed;
+  top: var(--sp-2);
+  left: var(--sp-2);
+  z-index: var(--z-skip);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+  border-radius: var(--r-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transform: translateY(-150%);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* ---- Accessibilité : masquer visuellement sans masquer pour l'AT ---- */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Menu mobile ouvert : page figée ----
+   Le scrim couvre la page, le dropdown est le seul plan actif. Bloque le
+   scroll natif (tactile compris) ; Lenis est gelé côté JS (scrollFreeze). */
+html.is-menu-open {
+  overflow: hidden;
+}
+
+/* ---- Reduced-motion : source de vérité côté CSS ----
+   Neutralise transitions/animations AVANT même que le JS ne tourne, pour
+   éviter tout flash de contenu masqué. Le JS (Lenis/canvas/GSAP) honore la
+   même préférence de son côté. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Les éléments à révéler doivent être visibles d'emblée. */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# sorties du banc d audit mobile
+scripts/audit-mobile-out/

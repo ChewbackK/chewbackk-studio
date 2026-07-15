@@ -1,0 +1,126 @@
+---
+/**
+ * ManifestoSection.astro - section sous le hero.
+ * Une phrase manifeste en grande typo (ton affirmé + chaleureux), puis un
+ * court texte factuel + points clés. Les .reveal sont animés au scroll par
+ * smooth-scroll.ts (et posés à l'état final en reduced-motion).
+ */
+const points = [
+  {
+    titre: "Du simple au complexe",
+    texte:
+      "Un site vitrine, une landing, ou une application complète avec back-end : le même soin à chaque échelle.",
+  },
+  {
+    titre: "Des prix accessibles",
+    texte:
+      "Le tarif d'un indépendant, pas d'une agence. Un devis sur mesure, établi après un échange sur votre projet.",
+  },
+  {
+    titre: "Une réponse rapide",
+    texte: "Vous écrivez, je réponds sous 48 h. Pas de standard, pas d'attente.",
+  },
+  {
+    titre: "Des projets qui évoluent",
+    texte:
+      "On construit une base saine, pensée pour grandir avec vous plutôt qu'à refaire dans six mois.",
+  },
+];
+---
+
+<section class="manifesto">
+  <div class="container">
+    <p class="manifesto__eyebrow reveal">Pourquoi Chewbackk</p>
+
+    <h2 class="manifesto__statement reveal">
+      Votre projet mérite mieux qu'un template.
+      <span class="manifesto__accent">Et quelqu'un qui répond.</span>
+    </h2>
+
+    <div class="manifesto__body">
+      <p class="manifesto__lead reveal">
+        Chewbackk Studio, c'est Evan Bouvier : un développeur web freelance,
+        pas une agence et pas une usine à templates. Vous parlez directement à
+        la personne qui construit votre projet.
+      </p>
+
+      <ul class="manifesto__points">
+        {
+          points.map((p) => (
+            <li class="manifesto__point reveal">
+              <h3 class="manifesto__point-title">{p.titre}</h3>
+              <p class="manifesto__point-text">{p.texte}</p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .manifesto {
+    padding-block: var(--section-pad);
+  }
+
+  .manifesto__eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: var(--fs-step--1);
+    color: var(--c-accent);
+    margin-bottom: var(--sp-6);
+  }
+
+  .manifesto__statement {
+    font-size: clamp(2rem, 1.2rem + 4vw, 4.5rem);
+    max-width: 18ch;
+    margin: 0;
+  }
+  .manifesto__accent {
+    color: var(--c-ink-muted);
+  }
+
+  .manifesto__body {
+    margin-top: var(--sp-16);
+    display: grid;
+    gap: var(--sp-12);
+  }
+
+  .manifesto__lead {
+    font-size: var(--fs-step-2);
+    line-height: var(--lh-snug);
+    max-width: 40ch;
+    color: var(--c-ink);
+  }
+
+  .manifesto__points {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: var(--sp-8) var(--sp-12);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  }
+
+  .manifesto__point {
+    padding-top: var(--sp-4);
+    border-top: 1px solid var(--c-line);
+  }
+  .manifesto__point-title {
+    font-size: var(--fs-step-1);
+    margin-bottom: var(--sp-2);
+  }
+  .manifesto__point-text {
+    font-size: var(--fs-step-0);
+    color: var(--c-ink-muted);
+    max-width: 34ch;
+  }
+
+  /* Sur grand écran : le lead et les points côte à côte. */
+  @media (min-width: 900px) {
+    .manifesto__body {
+      grid-template-columns: 1fr 1.4fr;
+      align-items: start;
+      gap: var(--sp-16);
+    }
+  }
+</style>

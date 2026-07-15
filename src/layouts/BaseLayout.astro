@@ -1,0 +1,52 @@
+---
+/**
+ * BaseLayout.astro - coquille HTML commune à toutes les pages.
+ * Monte ClientRouter (transitions), les feuilles globales, la navigation, le
+ * pied de page, et amorce le moteur d'animations (Lenis + GSAP) une seule fois.
+ */
+import { ClientRouter } from "astro:transitions";
+import Seo from "../components/Seo.astro";
+import Navbar from "../components/Navbar.astro";
+import Footer from "../components/Footer.astro";
+
+// L'ordre importe : tokens (variables) → globals (base) → effects (classes).
+import "../styles/tokens.css";
+import "../styles/globals.css";
+import "../styles/effects.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  ogImage?: string;
+}
+const { title, description, ogImage } = Astro.props;
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <Seo title={title} description={description} ogImage={ogImage} />
+    <ClientRouter />
+    <!-- Flag synchrone (avant peinture) : permet de cacher en CSS l'état
+         initial des éléments animés UNIQUEMENT si JS est actif → pas de flash
+         de contenu, et contenu visible si JS est absent. -->
+    <script is:inline>
+      document.documentElement.classList.add("js");
+    </script>
+  </head>
+  <body>
+    <Navbar />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer />
+
+    <!-- Amorçage du moteur d'animations.
+         Le module s'exécute une fois ; il n'attache qu'un écouteur
+         `astro:page-load` qui (ré)initialise tout à chaque navigation. -->
+    <script>
+      import { bootstrapMotion } from "../scripts/smooth-scroll";
+      bootstrapMotion();
+    </script>
+  </body>
+</html>
