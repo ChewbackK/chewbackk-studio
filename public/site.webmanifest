@@ -1,0 +1,21 @@
+{
+  "name": "Chewbackk Studio",
+  "short_name": "Chewbackk",
+  "description": "Développement web sur mesure : sites, applications et automatisations.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

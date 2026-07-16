@@ -1,0 +1,130 @@
+---
+/**
+ * 404.astro - page d'erreur personnalisée.
+ * Convention Astro : ce fichier est toujours buildé en /404.html à la racine
+ * du site (même avec build.format en mode "directory"), ce qui correspond au
+ * chemin attendu par GitHub Pages pour servir une page 404 custom.
+ * `noindex` : cette page ne doit jamais être indexée par les moteurs de
+ * recherche (contrairement au comportement par défaut des autres pages).
+ */
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Page introuvable - Chewbackk Studio"
+  description="Cette page n'existe pas ou plus. Retour à l'accueil de Chewbackk Studio."
+  noindex
+>
+  <section class="page-head">
+    <div class="container">
+      <p class="page-head__eyebrow">
+        <span class="page-head__idx">404</span> Erreur
+      </p>
+      <h1 class="page-head__title">Page introuvable</h1>
+      <p class="page-head__pitch">
+        Le lien est mort ou l'adresse a été mal tapée. Cette page n'existe
+        pas, ou plus.
+      </p>
+    </div>
+  </section>
+
+  <section class="cta">
+    <div class="container cta__inner">
+      <h2>Et maintenant ?</h2>
+      <p>Retournez à l'accueil, ou décrivez ce que vous cherchiez.</p>
+      <div class="cta__actions">
+        <a class="btn btn--cta" href="/">Retour à l'accueil</a>
+        <a class="btn btn--ghost" href="/contact">Contact</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding-block: var(--section-pad) var(--sp-8);
+  }
+  .page-head__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .page-head__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .page-head__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .page-head__pitch {
+    margin-top: var(--sp-4);
+    max-width: 56ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .cta {
+    padding-block: var(--sp-8) var(--section-pad);
+    border-top: 1px solid var(--c-line);
+  }
+  .cta__inner {
+    max-width: 40rem;
+  }
+  .cta__inner h2 {
+    font-size: var(--fs-step-2);
+    margin: 0 0 var(--sp-3);
+  }
+  .cta__inner p {
+    color: var(--c-ink-muted);
+    margin: 0 0 var(--sp-6);
+  }
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sp-3) var(--sp-6);
+    border-radius: var(--r-sm);
+    font-weight: 700;
+    text-decoration: none;
+    transition:
+      transform var(--dur-fast) var(--ease-out),
+      box-shadow var(--dur) var(--ease-out);
+  }
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+  .btn--cta {
+    background: var(--c-accent);
+    color: var(--c-accent-ink);
+  }
+  .btn--cta:hover {
+    box-shadow: 0 12px 34px -10px rgba(var(--c-accent-rgb), 0.55);
+  }
+  .btn--ghost {
+    border: 1px solid var(--c-line);
+    color: var(--c-ink);
+    background: transparent;
+  }
+  .btn--ghost:hover {
+    border-color: var(--c-ink);
+  }
+</style>

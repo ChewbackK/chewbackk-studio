@@ -18,14 +18,16 @@ interface Props {
   title?: string;
   description?: string;
   ogImage?: string;
+  /** Empêche l'indexation de la page (ex. 404). Par défaut : indexable. */
+  noindex?: boolean;
 }
-const { title, description, ogImage } = Astro.props;
+const { title, description, ogImage, noindex } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="fr">
   <head>
-    <Seo title={title} description={description} ogImage={ogImage} />
+    <Seo title={title} description={description} ogImage={ogImage} noindex={noindex} />
     <ClientRouter />
     <!-- Flag synchrone (avant peinture) : permet de cacher en CSS l'état
          initial des éléments animés UNIQUEMENT si JS est actif → pas de flash

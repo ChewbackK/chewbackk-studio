@@ -3,12 +3,17 @@
  * Seo.astro - métadonnées du <head> : titre, description, canonique, Open Graph.
  * L'URL canonique dérive de `site` (astro.config.mjs). Inclut le preload de la
  * webfont d'affichage (chemin critique du hero).
+ * Inclut aussi le balisage JSON-LD (schema.org) identifiant Chewbackk Studio,
+ * présent sur toutes les pages : uniquement des informations déjà publiques
+ * ailleurs sur le site (mentions légales, contact).
  */
 interface Props {
   title?: string;
   description?: string;
   /** Chemin de l'OG image dans /public (optionnel). */
   ogImage?: string;
+  /** Empêche l'indexation de la page (ex. 404). Par défaut : indexable. */
+  noindex?: boolean;
 }
 
 const {
@@ -16,11 +21,29 @@ const {
   description =
     "Un développeur, pas une agence : sites, applications et automatisations sur mesure, à prix accessible. Réponse sous 48 h, projets pensés pour durer.",
   ogImage = "/og-image.png",
+  noindex = false,
 } = Astro.props;
 
 // URL canonique absolue (Astro.site est défini dans astro.config.mjs).
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
+
+// Identité structurée (schema.org) : reprend uniquement les faits déjà
+// publics sur /mentions-legales et /contact. Pas de note, d'avis, d'horaires
+// ni de téléphone : ces informations n'existent pas ailleurs sur le site.
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "Chewbackk Studio",
+  description:
+    "Développement web sur mesure : sites, applications et automatisations, par un développeur freelance.",
+  url: Astro.site?.href,
+  email: "bouvierevan-contact@proton.me",
+  founder: {
+    "@type": "Person",
+    name: "Evan Bouvier",
+  },
+};
 ---
 
 <meta charset="utf-8" />
@@ -30,9 +53,12 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 <title>{title}</title>
 <meta name="description" content={description} />
 <link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="manifest" href="/site.webmanifest" />
 
 <!-- Préchargement des webfonts du hero (chemin critique) : Archivo pour le
      titre XXL, Martian Mono pour les cotes/annotations du plan. -->
@@ -69,3 +95,6 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 }
 <meta name="twitter:card" content={ogImageUrl ? "summary_large_image" : "summary"} />
 <meta name="theme-color" content="#0a0a0a" />
+
+<!-- Données structurées (schema.org) : identité de Chewbackk Studio. -->
+<script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
