@@ -24,6 +24,27 @@ const isActive = (href: string) =>
       <span class="nav__brand-tag">studio</span>
     </a>
 
+    <!-- Ordre DOM volontaire : marque, PUIS bouton burger, PUIS liste de
+         liens, PUIS CTA. Sous 640px, la liste ne devient visible qu'après
+         le burger dans le flux : un Tab en avant depuis le burger ouvert
+         atteint donc les liens du menu avant le CTA, au lieu de les sauter
+         (l'ancien ordre plaçait la liste avant le burger, invisible en Tab
+         avant une fois le menu ouvert). Le CSS .nav__list.is-open reste en
+         position absolute top:100% par rapport à .nav (containing block via
+         position:sticky), donc l'affichage visuel ne dépend pas de cet ordre. -->
+    <button
+      class="nav__burger"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-menu-list"
+      aria-label="Ouvrir le menu"
+      data-nav-burger
+    >
+      <span class="nav__burger-bar" aria-hidden="true"></span>
+      <span class="nav__burger-bar" aria-hidden="true"></span>
+      <span class="nav__burger-bar" aria-hidden="true"></span>
+    </button>
+
     <nav aria-label="Navigation principale">
       <ul class="nav__list" id="nav-menu-list" data-nav-list>
         {
@@ -40,19 +61,6 @@ const isActive = (href: string) =>
         }
       </ul>
     </nav>
-
-    <button
-      class="nav__burger"
-      type="button"
-      aria-expanded="false"
-      aria-controls="nav-menu-list"
-      aria-label="Ouvrir le menu"
-      data-nav-burger
-    >
-      <span class="nav__burger-bar" aria-hidden="true"></span>
-      <span class="nav__burger-bar" aria-hidden="true"></span>
-      <span class="nav__burger-bar" aria-hidden="true"></span>
-    </button>
 
     <a class="nav__cta" href="/contact">
       <span class="nav__cta-full">Démarrer un projet</span>
