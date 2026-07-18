@@ -25,7 +25,7 @@ const year = new Date().getFullYear();
   </div>
 
   <div class="container footer__legal">
-    <p>© {year} Evan Bouvier - Chewbackk Studio.</p>
+    <p>© {year} <a href="https://evanbouvier.fr" target="_blank" rel="noopener noreferrer">Evan Bouvier</a> - Chewbackk Studio.</p>
     <p>TVA non applicable, art. 293 B du CGI.</p>
   </div>
 </footer>
@@ -78,5 +78,14 @@ const year = new Date().getFullYear();
     gap: var(--sp-2) var(--sp-6);
     color: var(--c-ink-muted);
     font-size: var(--fs-step--1);
+  }
+
+  .footer__legal a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .footer__legal a:hover {
+    color: var(--c-ink);
   }
 </style>
