@@ -47,6 +47,10 @@ async function handleSubmit(form: HTMLFormElement, statusEl: HTMLElement, submit
     return;
   }
 
+  if (!form.reportValidity()) {
+    return;
+  }
+
   if (!(data.get("consent") === "on")) {
     setStatus(statusEl, "Merci de cocher la case de consentement avant l'envoi.", "error");
     return;

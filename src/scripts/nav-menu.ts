@@ -100,6 +100,18 @@ function init(): void {
   pageFooter = document.querySelector<HTMLElement>("footer.footer");
   if (!burger || !list) return;
 
+  // Le header persiste entre navigations (transition:persist sur Navbar.astro),
+  // donc aria-current — calculé côté serveur une seule fois — doit être
+  // recalculé ici à chaque astro:page-load, sinon il reste figé sur l'URL
+  // d'origine. Même logique d'isActive() que dans Navbar.astro.
+  const path = window.location.pathname;
+  const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  list.querySelectorAll<HTMLAnchorElement>("a[href]").forEach((a) => {
+    const href = a.getAttribute("href") ?? "";
+    if (isActive(href)) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
+
   closeMenu();
 
   onToggle = () => {
