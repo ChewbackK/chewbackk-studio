@@ -1,19 +1,95 @@
 ---
 /**
- * realisations.astro - projets réels livrés (brief §3).
+ * realisations.astro - projets réels livrés (brief §3) + projets personnels
+ * en démonstration de compétences (brief déjà présenté ailleurs sur le site).
  * UDPS 56 volontairement absent : projet en stand-by (contenu/décision pas
- * prêts). On ne montre que ce qui est fini : Axel Mahé + le placeholder.
+ * prêts).
+ *
+ * Chaque entrée peut avoir un aperçu vidéo (Axel Mahé) ou image (Chewcast,
+ * Portfolio personnel) — voir preview.kind. Les assets vivent dans
+ * src/assets/previews/ (générés par ffmpeg/playwright, pas de source lourde
+ * committée : la vidéo brute d'Axel Mahé (~11 Mo) reste dans son propre repo,
+ * seul l'extrait optimisé de 5s/~350 Ko est ici) — voir
+ * src/assets/previews/README.md pour les paramètres exacts de régénération.
+ *
+ * kind: "client" affiche le rôle en accent (couleur de marque) — réservé aux
+ * vraies livraisons. kind: "perso" affiche "Projet personnel" en ton neutre :
+ * distingue visuellement sans écarter ces projets de la page (ils montrent
+ * une palette de compétences réelle, juste non commanditée).
+ *
+ * preview.kind sert de discriminant sur un vrai type union (pas juste une
+ * chaîne libre) : sans ça, TypeScript élargit "video"/"image" en `string` et
+ * ne fait plus de narrowing sur les champs qui suivent (poster/webm/mp4 vs
+ * image), donc plus aucune erreur à la compilation sur un typo ou un champ
+ * manquant — vérifié avec `astro check` avant ce typage (3 erreurs
+ * "possibly undefined" silencieuses, jamais lancé par le build ni la CI).
  */
+import type { ImageMetadata } from "astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const projects = [
+import axelWebm from "../assets/previews/axel-mahe-preview.webm";
+import axelMp4 from "../assets/previews/axel-mahe-preview.mp4";
+import axelPoster from "../assets/previews/axel-mahe-poster.jpg";
+import chewcastPreview from "../assets/previews/chewcast-preview.webp";
+import portfolioPreview from "../assets/previews/portfolio-perso-preview.webp";
+
+type Fit = "cover" | "contain";
+
+type Preview =
+  | { kind: "video"; webm: string; mp4: string; poster: ImageMetadata; fit: Fit }
+  | { kind: "image"; image: ImageMetadata; fit: Fit };
+
+type Project = {
+  name: string;
+  desc: string;
+  tags: string[];
+  year: string;
+  url: string | null;
+  preview: Preview;
+} & ({ kind: "client"; role: string } | { kind: "perso" });
+
+const projects: Project[] = [
   {
     name: "Axel Mahé",
+    kind: "client",
     role: "Étudiant réalisateur",
     desc: "Portfolio cinéma : design sombre, galerie de films.",
     tags: ["Front uniquement"],
     year: "2026",
     url: "https://axel-mahe.netlify.app",
+    preview: {
+      kind: "video",
+      webm: axelWebm,
+      mp4: axelMp4,
+      poster: axelPoster,
+      fit: "cover",
+    },
+  },
+  {
+    name: "Chewcast",
+    kind: "perso",
+    desc: "App de pêche au lancer, terrain + planification : météo, marées et recommandations générées automatiquement.",
+    tags: ["Express", "SQLite", "PWA"],
+    year: "2026",
+    url: null,
+    preview: {
+      kind: "image",
+      image: chewcastPreview,
+      fit: "contain",
+    },
+  },
+  {
+    name: "Portfolio personnel",
+    kind: "perso",
+    desc: "Site vitrine perso : présentation, parcours, projets académiques.",
+    tags: ["Vite", "GSAP"],
+    year: "2026",
+    url: "https://evanbouvier.fr",
+    preview: {
+      kind: "image",
+      image: portfolioPreview,
+      fit: "cover",
+    },
   },
 ];
 ---
@@ -40,38 +116,94 @@ const projects = [
       {
         projects.map((p) => (
           <article class="project">
-            <div class="project__head">
-              <h2 class="project__name">{p.name}</h2>
-              <span class="project__year">{p.year}</span>
+            {/* Aperçus purement décoratifs : tout ce qu'ils montrent (nom,
+                rôle, description) est déjà porté par le texte juste en
+                dessous — aria-hidden/alt="" plutôt qu'un label qui
+                doublonnerait l'annonce pour un lecteur d'écran, cohérent
+                avec HeroBlueprint.astro et ServicesPreview.astro. */}
+            <div class={`project__preview project__preview--${p.preview.fit}`} aria-hidden="true">
+              {p.preview.kind === "video" ? (
+                <>
+                  <video
+                    class="project__preview-media project__preview-media--motion"
+                    poster={p.preview.poster.src}
+                    autoplay
+                    muted
+                    loop
+                    playsinline
+                    preload="auto"
+                  >
+                    <source src={p.preview.webm} type="video/webm" />
+                    <source src={p.preview.mp4} type="video/mp4" />
+                  </video>
+                  <img
+                    class="project__preview-media project__preview-media--static"
+                    src={p.preview.poster.src}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </>
+              ) : (
+                <img
+                  class="project__preview-media"
+                  src={p.preview.image.src}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
             </div>
-            <p class="project__role">{p.role}</p>
-            <p class="project__desc">{p.desc}</p>
-            <ul class="project__tags">
-              {p.tags.map((t) => (
-                <li>{t}</li>
-              ))}
-            </ul>
-            <a class="project__link" href={p.url} target="_blank" rel="noopener noreferrer">
-              Voir le site &rarr;
-            </a>
+
+            <div class="project__body">
+              <div class="project__head">
+                <h2 class="project__name">{p.name}</h2>
+                <span class="project__year">{p.year}</span>
+              </div>
+              {p.kind === "client" ? (
+                <p class="project__role">{p.role}</p>
+              ) : (
+                <p class="project__role project__role--perso">Projet personnel</p>
+              )}
+              <p class="project__desc">{p.desc}</p>
+              <ul class="project__tags">
+                {p.tags.map((t) => (
+                  <li>{t}</li>
+                ))}
+              </ul>
+              {p.url && (
+                <a class="project__link" href={p.url} target="_blank" rel="noopener noreferrer">
+                  Voir le site &rarr;
+                </a>
+              )}
+            </div>
           </article>
         ))
       }
 
       <article class="project project--placeholder">
-        <div class="project__head">
-          <h2 class="project__name">Votre projet</h2>
+        <div class="project__body project__body--placeholder">
+          <div class="project__head">
+            <h2 class="project__name">Votre projet</h2>
+          </div>
+          <p class="project__desc">
+            La prochaine réalisation pourrait être la vôtre. Parlons-en.
+          </p>
+          <a class="project__link" href="/contact">Démarrer un projet &rarr;</a>
         </div>
-        <p class="project__desc">
-          La prochaine réalisation pourrait être la vôtre. Parlons-en.
-        </p>
-        <a class="project__link" href="/contact">Démarrer un projet &rarr;</a>
       </article>
     </div>
   </section>
 </BaseLayout>
 
 <style>
+  .projects {
+    /* Hauteur partagée par la fenêtre d'aperçu et le placeholder, pour que
+       toutes les cartes s'alignent sur la même grille — cf. --bp-cell dans
+       HeroBlueprint.astro pour le même pattern de variable locale. */
+    --preview-h: 15rem;
+  }
+
   .page-head {
     padding-block: var(--section-pad) var(--sp-8);
   }
@@ -113,6 +245,7 @@ const projects = [
   .projects__grid {
     display: grid;
     gap: var(--sp-6);
+    align-items: start;
   }
   @media (min-width: 720px) {
     .projects__grid {
@@ -122,15 +255,55 @@ const projects = [
 
   .project {
     display: grid;
-    align-content: start;
-    gap: var(--sp-3);
-    padding: var(--sp-6);
     border: 1px solid var(--c-line);
     border-radius: var(--r-md);
+    overflow: hidden;
   }
   .project--placeholder {
     border-style: dashed;
     color: var(--c-ink-muted);
+  }
+
+  /* Fenêtre d'aperçu — hauteur fixe partagée par toutes les cartes, chaque
+     média garde son ratio naturel dedans (cover pour les formats larges,
+     contain + fond sombre pour la capture mobile de Chewcast, qui reste
+     ainsi lisible en entier plutôt que rognée sur les côtés). */
+  .project__preview {
+    aspect-ratio: unset;
+    height: var(--preview-h);
+    background: var(--c-bg-elev);
+    border-bottom: 1px solid var(--c-line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .project__preview-media {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .project__preview--cover .project__preview-media {
+    object-fit: cover;
+  }
+  .project__preview--contain .project__preview-media {
+    object-fit: contain;
+  }
+  /* Le poster statique (fallback prefers-reduced-motion) est superposé au
+     même emplacement que la vidéo mais cachée par défaut — seule la requête
+     média ci-dessous choisit laquelle des deux s'affiche. */
+  .project__preview-media--static {
+    display: none;
+  }
+
+  .project__body {
+    display: grid;
+    align-content: start;
+    gap: var(--sp-3);
+    padding: var(--sp-6);
+  }
+  .project__body--placeholder {
+    align-content: center;
+    min-height: var(--preview-h);
   }
   .project__head {
     display: flex;
@@ -153,6 +326,11 @@ const projects = [
     letter-spacing: 0.08em;
     color: var(--c-accent);
     margin: 0;
+  }
+  .project__role--perso {
+    color: var(--c-ink-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
   }
   .project__desc {
     color: var(--c-ink-muted);
@@ -184,5 +362,17 @@ const projects = [
   .project__link:hover {
     color: var(--c-accent);
     border-color: var(--c-accent);
+  }
+
+  /* Une vidéo qui boucle en continu est superflue si le visiteur a demandé
+     moins de mouvement — bascule vers l'image statique (même cadrage, une
+     seule frame) au lieu de la vidéo autoplay. */
+  @media (prefers-reduced-motion: reduce) {
+    .project__preview-media--motion {
+      display: none;
+    }
+    .project__preview-media--static {
+      display: block;
+    }
   }
 </style>
