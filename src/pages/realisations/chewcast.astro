@@ -1,0 +1,213 @@
+---
+/**
+ * realisations/chewcast.astro - page de détail du projet Chewcast.
+ * Reprend les mêmes données que l'entrée "Chewcast" du tableau `projects`
+ * dans ../realisations.astro (kind: "perso", url: null - pas de site externe
+ * déployé pour l'instant) sans dépendre de ce fichier, pour ne pas y toucher.
+ *
+ * Galerie : 4 captures mobile (430x932) de l'app tournant en local, générées
+ * via Playwright + Chrome — voir src/assets/previews/README.md pour la
+ * convention de capture. Importées via astro:assets (pas de public/ brut) :
+ * <Image> infère width/height depuis les métadonnées de l'import local.
+ */
+import { Image } from "astro:assets";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+import imgAccueil from "../../assets/gallery/chewcast/chewcast-accueil.webp";
+import imgSpots from "../../assets/gallery/chewcast/chewcast-spots.webp";
+import imgPlanifier from "../../assets/gallery/chewcast/chewcast-planifier.webp";
+import imgReference from "../../assets/gallery/chewcast/chewcast-reference.webp";
+
+const name = "Chewcast";
+const year = "2026";
+const tags = ["Express", "SQLite", "PWA"];
+const desc =
+  "Chewcast est une PWA auto-hébergée (Express + SQLite) pensée pour la pêche au lancer, à la fois en préparation et sur le terrain. L'accueil résume la prochaine session planifiée et donne un accès rapide aux quatre sections de l'app. Le catalogue de spots recense des postes de pêche réels du sud Bretagne (accès, structures, espèces ciblées, niveau de difficulté). La planification de session est un formulaire en plusieurs étapes (choix du spot, horaires, espèces ciblées) qui s'appuie sur des données marée/météo récupérées automatiquement, et la section Référence embarque une base réglementaire 2026 (tailles minimales, quotas) ainsi que des guides pratiques (leurres, nœuds, théorie des marées).";
+// Pas de site externe déployé pour l'instant - ne pas inventer d'URL.
+const url: string | null = null;
+
+const images = [
+  {
+    src: imgAccueil,
+    alt: "Écran d'accueil de Chewcast : prochaine session planifiée et accès rapides aux sections",
+    legende: "Accueil",
+  },
+  {
+    src: imgSpots,
+    alt: "Catalogue des spots de pêche avec commune, type de zone, espèces ciblées et niveau de difficulté",
+    legende: "Catalogue des spots",
+  },
+  {
+    src: imgPlanifier,
+    alt: "Assistant de planification d'une session en plusieurs étapes : spot, horaires, espèces ciblées",
+    legende: "Planifier une session",
+  },
+  {
+    src: imgReference,
+    alt: "Section Référence : tailles minimales réglementaires 2026, guide leurres, nœuds et théorie des marées",
+    legende: "Référence",
+  },
+];
+---
+
+<BaseLayout title={`${name} - Chewbackk Studio`} description={desc}>
+  <section class="detail">
+    <div class="container">
+      <a class="detail__back" href="/realisations">&larr; Retour aux réalisations</a>
+
+      <header class="detail__header">
+        <div class="detail__head">
+          <h1 class="detail__name">{name}</h1>
+          <span class="detail__year">{year}</span>
+        </div>
+        <p class="detail__role detail__role--perso">Projet personnel</p>
+        <ul class="detail__tags">
+          {tags.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      </header>
+
+      <p class="detail__desc">{desc}</p>
+
+      {url && (
+        <a class="detail__link" href={url} target="_blank" rel="noopener noreferrer">
+          Voir le site &rarr;
+        </a>
+      )}
+
+      <div class="detail__gallery">
+        {images.map((img) => (
+          <figure class="detail__figure">
+            <Image class="detail__image" src={img.src} alt={img.alt} loading="lazy" decoding="async" />
+            <figcaption class="detail__caption">{img.legende}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .detail {
+    padding-block: var(--section-pad);
+  }
+
+  .detail__back {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .detail__back:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .detail__header {
+    margin-top: var(--sp-8);
+  }
+  .detail__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-3);
+  }
+  .detail__name {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .detail__year {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step-0);
+    color: var(--c-ink-muted);
+  }
+  .detail__role {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+  }
+  .detail__role--perso {
+    color: var(--c-ink-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+  .detail__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+  }
+  .detail__tags li {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.2em 0.6em;
+  }
+
+  .detail__desc {
+    margin-top: var(--sp-6);
+    max-width: 68ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .detail__link {
+    display: inline-block;
+    margin-top: var(--sp-4);
+    color: var(--c-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .detail__link:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .detail__gallery {
+    margin-top: var(--sp-12);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  @media (min-width: 560px) {
+    .detail__gallery {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1080px) {
+    .detail__gallery {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .detail__figure {
+    display: grid;
+    gap: var(--sp-3);
+    margin: 0;
+  }
+  .detail__image {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-bg-elev);
+  }
+  .detail__caption {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    text-align: center;
+  }
+</style>

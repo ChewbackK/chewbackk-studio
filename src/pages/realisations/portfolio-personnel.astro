@@ -1,0 +1,283 @@
+---
+/**
+ * portfolio-personnel.astro - page de détail de la réalisation "Portfolio
+ * personnel" (liste principale : /realisations). Projet perso : site vitrine
+ * d'Evan Bouvier (evanbouvier.fr), construit avec Vite et animé via
+ * GSAP/Lenis.
+ *
+ * `project` reprend volontairement le même type discriminé (kind
+ * "client"/"perso") que src/pages/realisations.astro, pour que le même
+ * traitement visuel (rôle en accent vs "Projet personnel" en ton neutre)
+ * s'applique ici et sur les prochaines pages de détail.
+ *
+ * Captures : mêmes techniques que src/assets/previews/README.md (Playwright
+ * via playwright-core, chromium système, capture avec marge puis recadrage
+ * précis à l'ImageMagick — jamais de fenêtre collée à la taille cible).
+ * hero.webp s'arrête net après "Bouvier", AVANT la ligne d'emploi actuel du
+ * site source ; projets.webp exclut entièrement la première fiche du
+ * portfolio (qui mentionne l'employeur) et ne montre que DEF'IUT et
+ * l'infrastructure réseau virtualisée. Vérifié visuellement avant intégration
+ * — aucune mention d'employeur dans les deux fichiers finaux.
+ */
+import { Image } from "astro:assets";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+import hero from "../../assets/gallery/portfolio-personnel/hero.webp";
+import projets from "../../assets/gallery/portfolio-personnel/projets.webp";
+
+type Project = {
+  name: string;
+  year: string;
+  tags: string[];
+  url: string | null;
+} & ({ kind: "client"; role: string } | { kind: "perso" });
+
+// Enveloppé dans un tableau (même si un seul élément) pour la même raison
+// que `projects` dans realisations.astro : un objet littéral assigné
+// directement à `project: Project` se voit resserré par TypeScript au type
+// littéral de son initialiseur (kind: "perso") plutôt qu'à l'union déclarée,
+// et le ternaire `project.kind === "client"` plus bas devient alors une
+// comparaison jugée impossible — vérifié avec `astro check` (2 erreurs avant
+// ce contournement, jamais lancé par le build ni la CI).
+const projects: Project[] = [
+  {
+    name: "Portfolio personnel",
+    kind: "perso",
+    year: "2026",
+    tags: ["Vite", "GSAP"],
+    url: "https://evanbouvier.fr",
+  },
+];
+const project = projects[0];
+
+const gallery = [
+  {
+    image: hero,
+    alt: `Hero du portfolio personnel d'Evan Bouvier : grande typographie "EVAN Bouvier", badge de disponibilité et lien vers Chewbackk Studio dans la navigation`,
+    legende: `Le hero du site, avec le lien vers Chewbackk Studio déjà présent dans la navbar.`,
+  },
+  {
+    image: projets,
+    alt: `Deux fiches projet de la page /projets/ : DEF'IUT (Vue.js, Express, MySQL, Docker) et Infrastructure réseau virtualisée (Linux, DHCP, DNS, VMs)`,
+    legende: `La page /projets/ : fiches de réalisations académiques avec stack et contexte (SAÉ, note obtenue).`,
+  },
+];
+---
+
+<BaseLayout
+  title="Portfolio personnel - Chewbackk Studio"
+  description="Site vitrine perso : présentation, parcours, projets académiques. Un hero en grande typographie (Archivo condensé + script en accent bleu) pose le ton, puis une page /projets/ liste les réalisations académiques et SAÉ sous forme de fiches (stack, note obtenue, description) — DEF'IUT (plateforme de défis universitaires en Vue 3 + Express + MySQL, dockerisée) et une infrastructure réseau virtualisée (3 VMs Linux, DHCP/DNS, SAÉ S2 notée 17,5/20) en sont deux exemples. Construit avec Vite et animé via GSAP/Lenis pour le scroll et les transitions."
+>
+  <section class="page-head">
+    <div class="container">
+      <a class="page-head__back" href="/realisations">&larr; Retour aux réalisations</a>
+
+      <div class="page-head__row">
+        <div>
+          <p class="page-head__eyebrow">
+            <span class="page-head__idx">{project.year}</span>
+            {project.kind === "client" ? (
+              <span class="page-head__role">{project.role}</span>
+            ) : (
+              <span class="page-head__role page-head__role--perso">Projet personnel</span>
+            )}
+          </p>
+          <h1 class="page-head__title">{project.name}</h1>
+        </div>
+
+        {project.url && (
+          <a class="page-head__link" href={project.url} target="_blank" rel="noopener noreferrer">
+            Voir le site &rarr;
+          </a>
+        )}
+      </div>
+
+      <p class="page-head__pitch">
+        Site vitrine perso : présentation, parcours, projets académiques.
+      </p>
+
+      <ul class="page-head__tags">
+        {project.tags.map((t) => (
+          <li>{t}</li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="detail">
+    <div class="container detail__body">
+      <p>
+        Un hero en grande typographie (Archivo condensé + script en accent
+        bleu) pose le ton, puis une page /projets/ liste les réalisations
+        académiques et SAÉ sous forme de fiches (stack, note obtenue,
+        description) — DEF'IUT (plateforme de défis universitaires en Vue 3 +
+        Express + MySQL, dockerisée) et une infrastructure réseau virtualisée
+        (3 VMs Linux, DHCP/DNS, SAÉ S2 notée 17,5/20) en sont deux exemples.
+      </p>
+      <p>
+        Construit avec Vite et animé via GSAP/Lenis pour le scroll et les
+        transitions.
+      </p>
+    </div>
+  </section>
+
+  <section class="gallery">
+    <div class="container gallery__grid">
+      {
+        gallery.map((g) => (
+          <figure class="gallery__item">
+            <Image class="gallery__img" src={g.image} alt={g.alt} loading="lazy" decoding="async" />
+            <figcaption class="gallery__caption">{g.legende}</figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding-block: var(--section-pad) var(--sp-8);
+  }
+  .page-head__back {
+    display: inline-block;
+    margin-bottom: var(--sp-8);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--c-ink-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .page-head__back:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .page-head__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--sp-4);
+  }
+
+  .page-head__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .page-head__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .page-head__role {
+    color: var(--c-accent);
+  }
+  .page-head__role--perso {
+    color: var(--c-ink-muted);
+    letter-spacing: 0.04em;
+  }
+
+  .page-head__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+
+  .page-head__link {
+    flex-shrink: 0;
+    color: var(--c-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-line);
+    width: fit-content;
+    padding-bottom: 0.1em;
+  }
+  .page-head__link:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .page-head__pitch {
+    margin-top: var(--sp-4);
+    max-width: 56ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .page-head__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-6) 0 0;
+    padding: 0;
+  }
+  .page-head__tags li {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.2em 0.6em;
+  }
+
+  .detail {
+    padding-block: 0 var(--sp-8);
+    border-top: 1px solid var(--c-line);
+  }
+  .detail__body {
+    display: grid;
+    gap: var(--sp-4);
+    max-width: 68ch;
+    padding-top: var(--sp-8);
+    color: var(--c-ink-muted);
+  }
+
+  .gallery {
+    padding-block: var(--sp-8) var(--section-pad);
+  }
+  .gallery__grid {
+    display: grid;
+    gap: var(--sp-6);
+  }
+  @media (min-width: 900px) {
+    .gallery__grid {
+      grid-template-columns: repeat(2, 1fr);
+      align-items: start;
+    }
+  }
+
+  .gallery__item {
+    display: grid;
+    gap: var(--sp-3);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    padding: var(--sp-3);
+    background: var(--c-bg-elev);
+  }
+  .gallery__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--r-sm);
+  }
+  .gallery__caption {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    padding-inline: var(--sp-1);
+  }
+</style>

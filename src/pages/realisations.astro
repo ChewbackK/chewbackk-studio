@@ -41,6 +41,7 @@ type Preview =
 
 type Project = {
   name: string;
+  slug: string;
   desc: string;
   tags: string[];
   year: string;
@@ -51,6 +52,7 @@ type Project = {
 const projects: Project[] = [
   {
     name: "Axel Mahé",
+    slug: "axel-mahe",
     kind: "client",
     role: "Étudiant réalisateur",
     desc: "Portfolio cinéma : design sombre, galerie de films.",
@@ -67,6 +69,7 @@ const projects: Project[] = [
   },
   {
     name: "Chewcast",
+    slug: "chewcast",
     kind: "perso",
     desc: "App de pêche au lancer, terrain + planification : météo, marées et recommandations générées automatiquement.",
     tags: ["Express", "SQLite", "PWA"],
@@ -80,6 +83,7 @@ const projects: Project[] = [
   },
   {
     name: "Portfolio personnel",
+    slug: "portfolio-personnel",
     kind: "perso",
     desc: "Site vitrine perso : présentation, parcours, projets académiques.",
     tags: ["Vite", "GSAP"],
@@ -172,11 +176,31 @@ const projects: Project[] = [
                 ))}
               </ul>
               {p.url && (
-                <a class="project__link" href={p.url} target="_blank" rel="noopener noreferrer">
+                <a
+                  class="project__link project__link--external"
+                  href={p.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   Voir le site &rarr;
                 </a>
               )}
             </div>
+
+            {/* Stretched link : rend toute la carte cliquable vers la page de
+                détail, sans imbriquer un <a> dans un autre (invalide en
+                HTML) — cet <a> est un sibling positionné en absolute/inset:0
+                avec un z-index bas ; le lien externe "Voir le site" reçoit
+                lui un z-index plus élevé pour rester cliquable
+                indépendamment par-dessus. Pas de texte visible : le nom/la
+                description du projet sont déjà juste au-dessus dans le DOM,
+                d'où l'aria-label plutôt qu'un contenu qui doublonnerait
+                l'annonce pour un lecteur d'écran. */}
+            <a
+              class="project__stretched-link"
+              href={`/realisations/${p.slug}`}
+              aria-label={`Voir le détail du projet ${p.name}`}
+            />
           </article>
         ))
       }
@@ -254,6 +278,7 @@ const projects: Project[] = [
   }
 
   .project {
+    position: relative;
     display: grid;
     border: 1px solid var(--c-line);
     border-radius: var(--r-md);
@@ -262,6 +287,17 @@ const projects: Project[] = [
   .project--placeholder {
     border-style: dashed;
     color: var(--c-ink-muted);
+  }
+
+  /* Stretched link (pattern Bootstrap) : couvre toute la carte, sous le lien
+     externe "Voir le site" (z-index plus élevé, voir .project__link--external)
+     mais au-dessus de l'aperçu/texte non interactifs. Absent de la carte
+     placeholder "Votre projet", qui garde uniquement son lien "Démarrer un
+     projet". */
+  .project__stretched-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
   }
 
   /* Fenêtre d'aperçu — hauteur fixe partagée par toutes les cartes, chaque
@@ -362,6 +398,13 @@ const projects: Project[] = [
   .project__link:hover {
     color: var(--c-accent);
     border-color: var(--c-accent);
+  }
+  /* Doit rester cliquable indépendamment du lien étiré (.project__stretched-link,
+     z-index:1) posé par-dessus toute la carte : position relative + z-index
+     supérieur explicite pour gagner l'empilement. */
+  .project__link--external {
+    position: relative;
+    z-index: 2;
   }
 
   /* Une vidéo qui boucle en continu est superflue si le visiteur a demandé

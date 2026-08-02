@@ -1,0 +1,216 @@
+---
+/**
+ * realisations/axel-mahe.astro - page de détail du projet Axel Mahé.
+ * Reprend les mêmes données que l'entrée "Axel Mahé" du tableau `projects`
+ * dans ../realisations.astro (kind: "client", role "Étudiant réalisateur",
+ * url du site livré) sans dépendre de ce fichier, pour ne pas y toucher.
+ *
+ * Galerie : 4 captures réelles du site https://axel-mahe.netlify.app
+ * (accueil, réalisations/DYKA, associations, projets), générées via
+ * Playwright + Chrome système puis recadrées/encodées en WebP — voir
+ * src/assets/gallery/axel-mahe/README.md pour la méthode et les pièges
+ * rencontrés (preloader SMPTE, fade-in du header sur /projets). Importées
+ * via astro:assets (pas de public/ brut) : <Image> infère width/height
+ * depuis les métadonnées de l'import local.
+ */
+import { Image } from "astro:assets";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+import imgHero from "../../assets/gallery/axel-mahe/axel-mahe-hero.webp";
+import imgDyka from "../../assets/gallery/axel-mahe/axel-mahe-realisations-dyka.webp";
+import imgAssociations from "../../assets/gallery/axel-mahe/axel-mahe-associations.webp";
+import imgProjets from "../../assets/gallery/axel-mahe/axel-mahe-projets.webp";
+
+const name = "Axel Mahé";
+const year = "2026";
+const role = "Étudiant réalisateur";
+const tags = ["Front uniquement"];
+const desc =
+  "Portfolio cinéma : design sombre, galerie de films. Le site s'ouvre sur une amorce de pellicule façon SMPTE (décompte, repères de ratio 1.33/1.85/2.39:1) avant de révéler un hero typographique signé \"AXEL Mahé\", puis une galerie de courts-métrages présentés en fiches détaillées (rôle, format, étalonnage, stills de tournage) — dont \"DYKA\", tourné en Cinémascope. Le site distingue aussi les projets annexes (\"Contact sheet\" : covers, courts perso, collaborations techniques) et l'engagement associatif (radio étudiante Ramdam, événements filmés) sur des pages au thème clair contrastant avec le noir du reste du site. L'ensemble assume une direction artistique cohérente autour du vocabulaire technique du cinéma (REC, TIMECODE, SCÈNE, GRADE).";
+const url = "https://axel-mahe.netlify.app";
+
+const images = [
+  {
+    src: imgHero,
+    alt: "Page d'accueil du portfolio d'Axel Mahé : titre \"AXEL Mahé\" en typographie sérif, sur fond sombre avec repères de ratio cinéma et bandeau REC/TIMECODE.",
+    legende: "Hero — esthétique slate de cinéma (REC, TIMECODE, ratios 1.33/1.85/2.39:1)",
+  },
+  {
+    src: imgDyka,
+    alt: "Page réalisations d'Axel Mahé montrant l'affiche du court-métrage DYKA, ses informations techniques (Cinémascope, DaVinci Resolve) et une galerie de photos de tournage.",
+    legende: "Page Réalisations — fiche détaillée du court-métrage \"DYKA\" (Cinémascope) avec galerie de stills",
+  },
+  {
+    src: imgAssociations,
+    alt: "Page associations d'Axel Mahé sur fond clair, présentant le projet \"Ramdam\" (radio étudiante) avec photo de régie et galerie du \"Cabaret des curiosités\".",
+    legende: "Page Associations — projet \"Ramdam\" (radio étudiante), thème clair contrastant avec le reste du site",
+  },
+  {
+    src: imgProjets,
+    alt: "Page projets d'Axel Mahé intitulée \"Contact sheet\", liste de projets annexes (courts personnels, collaborations) sur fond clair.",
+    legende: "Page Projets (\"Contact sheet\") — projets solo et collaborations en dehors des tournages principaux",
+  },
+];
+---
+
+<BaseLayout title={`${name} - Chewbackk Studio`} description={desc}>
+  <section class="detail">
+    <div class="container">
+      <a class="detail__back" href="/realisations">&larr; Retour aux réalisations</a>
+
+      <header class="detail__header">
+        <div class="detail__head">
+          <h1 class="detail__name">{name}</h1>
+          <span class="detail__year">{year}</span>
+        </div>
+        <p class="detail__role">{role}</p>
+        <ul class="detail__tags">
+          {tags.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      </header>
+
+      <p class="detail__desc">{desc}</p>
+
+      {url && (
+        <a class="detail__link" href={url} target="_blank" rel="noopener noreferrer">
+          Voir le site &rarr;
+        </a>
+      )}
+
+      <div class="detail__gallery">
+        {images.map((img) => (
+          <figure class="detail__figure">
+            <Image class="detail__image" src={img.src} alt={img.alt} loading="lazy" decoding="async" />
+            <figcaption class="detail__caption">{img.legende}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .detail {
+    padding-block: var(--section-pad);
+  }
+
+  .detail__back {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .detail__back:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .detail__header {
+    margin-top: var(--sp-8);
+  }
+  .detail__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-3);
+  }
+  .detail__name {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .detail__year {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step-0);
+    color: var(--c-ink-muted);
+  }
+  .detail__role {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+  }
+  .detail__role--perso {
+    color: var(--c-ink-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+  .detail__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+  }
+  .detail__tags li {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.2em 0.6em;
+  }
+
+  .detail__desc {
+    margin-top: var(--sp-6);
+    max-width: 68ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+
+  .detail__link {
+    display: inline-block;
+    margin-top: var(--sp-4);
+    color: var(--c-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .detail__link:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  /* Galerie : captures paysage (site tiers en 1760px de large, ratios entre
+     1.25 et 1.7) - deux colonnes suffisent à les garder lisibles, contrairement
+     à la grille à 4 colonnes de realisations/chewcast.astro (captures mobile
+     portrait, bien plus étroites). */
+  .detail__gallery {
+    margin-top: var(--sp-12);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+    align-items: start;
+  }
+  @media (min-width: 760px) {
+    .detail__gallery {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .detail__figure {
+    display: grid;
+    gap: var(--sp-3);
+    margin: 0;
+  }
+  .detail__image {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-bg-elev);
+  }
+  .detail__caption {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    text-align: center;
+  }
+</style>
