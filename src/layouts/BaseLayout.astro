@@ -35,6 +35,13 @@ const { title, description, ogImage, noindex } = Astro.props;
     <script is:inline>
       document.documentElement.classList.add("js");
     </script>
+    <!-- Cloudflare Web Analytics -->
+    <script
+      type="module"
+      is:inline
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "9459ea9841e34afaa3e8a50c7651fc43"}'></script>
+    <!-- End Cloudflare Web Analytics -->
   </head>
   <body>
     <Navbar />
