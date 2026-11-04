@@ -156,41 +156,7 @@ const services = [
     gap: var(--sp-4);
   }
 
-  /* Boutons (mêmes styles que le hero, locaux à la section). */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--sp-3) var(--sp-6);
-    border-radius: var(--r-sm);
-    font-weight: 700;
-    text-decoration: none;
-    transition:
-      transform var(--dur-fast) var(--ease-out),
-      box-shadow var(--dur) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out),
-      background-color var(--dur-fast) var(--ease-out);
-  }
-  .btn:hover {
-    transform: translateY(-2px);
-  }
-  .btn--cta {
-    background: var(--c-accent);
-    color: var(--c-accent-ink);
-  }
-  .btn--cta:hover {
-    color: var(--c-accent-ink);
-    box-shadow: 0 10px 30px -8px rgba(var(--c-accent-rgb), 0.5);
-  }
-  .btn--ghost {
-    border: 1px solid var(--c-line);
-    color: var(--c-ink);
-  }
-  .btn--ghost:hover {
-    color: var(--c-ink);
-    border-color: var(--c-accent);
-    background: rgba(var(--c-accent-rgb), 0.08);
-  }
+  /* Boutons : styles partagés dans src/styles/components.css. */
 
   /* Mobile : la flèche reste visible (pas de hover), numéro au-dessus. */
   @media (max-width: 600px) {

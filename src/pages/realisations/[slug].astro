@@ -1,0 +1,217 @@
+---
+/**
+ * realisations/[slug].astro - page de détail d'un projet, générée pour
+ * chaque fiche de src/content/projets/ (schéma : src/content.config.ts).
+ *
+ * Une seule mise en page pour tous les projets : en-tête (nom, année, rôle
+ * ou « Projet personnel », tags), description longue (corps Markdown de la
+ * fiche), lien vers le site, puis la galerie. kind: "client" affiche le rôle
+ * en accent (couleur de marque), kind: "perso" en ton neutre.
+ *
+ * Galerie : `paysage` pour des captures desktop (2 colonnes suffisent à les
+ * garder lisibles), `portrait` pour des captures mobile, bien plus étroites
+ * (jusqu'à 4 colonnes). Images importées via image() du schéma : <Image>
+ * connaît leurs dimensions, pas de décalage de mise en page au chargement.
+ */
+import { Image } from "astro:assets";
+import { getCollection, render, type CollectionEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const projets = await getCollection("projets");
+  return projets.map((projet) => ({ params: { slug: projet.id }, props: { projet } }));
+}
+
+interface Props {
+  projet: CollectionEntry<"projets">;
+}
+const { projet } = Astro.props;
+const p = projet.data;
+const { Content } = await render(projet);
+---
+
+<BaseLayout title={`${p.name} - Chewbackk Studio`} description={p.seoDescription}>
+  <section class="detail">
+    <div class="container">
+      <a class="detail__back" href="/realisations">&larr; Retour aux réalisations</a>
+
+      <header class="detail__header">
+        <div class="detail__head">
+          <h1 class="detail__name">{p.name}</h1>
+          <span class="detail__year">{p.year}</span>
+        </div>
+        {
+          p.kind === "client" ? (
+            <p class="detail__role">{p.role}</p>
+          ) : (
+            <p class="detail__role detail__role--perso">Projet personnel</p>
+          )
+        }
+        <ul class="detail__tags">
+          {p.tags.map((t) => (
+            <li>{t}</li>
+          ))}
+        </ul>
+      </header>
+
+      <div class="detail__desc">
+        <Content />
+      </div>
+
+      {
+        p.url && (
+          <a class="detail__link" href={p.url} target="_blank" rel="noopener noreferrer">
+            Voir le site &rarr;
+          </a>
+        )
+      }
+
+      <div class={`detail__gallery detail__gallery--${p.gallery.layout}`}>
+        {
+          p.gallery.images.map((img) => (
+            <figure class="detail__figure">
+              <Image class="detail__image" src={img.src} alt={img.alt} loading="lazy" decoding="async" />
+              <figcaption class="detail__caption">{img.legende}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .detail {
+    padding-block: var(--section-pad);
+  }
+
+  .detail__back {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+  }
+  .detail__back:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .detail__header {
+    margin-top: var(--sp-8);
+  }
+  .detail__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--sp-3);
+  }
+  .detail__name {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .detail__year {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step-0);
+    color: var(--c-ink-muted);
+  }
+  .detail__role {
+    margin-top: var(--sp-3);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--c-accent);
+  }
+  .detail__role--perso {
+    color: var(--c-ink-muted);
+    font-family: var(--font-mono);
+    letter-spacing: 0.04em;
+  }
+  .detail__tags {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-2);
+    margin: var(--sp-4) 0 0;
+    padding: 0;
+  }
+  .detail__tags li {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.2em 0.6em;
+  }
+
+  /* Corps Markdown de la fiche : un ou plusieurs paragraphes. */
+  .detail__desc {
+    margin-top: var(--sp-6);
+    max-width: 68ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+  .detail__desc :global(p + p) {
+    margin-top: var(--sp-4);
+  }
+
+  .detail__link {
+    display: inline-block;
+    margin-top: var(--sp-4);
+    color: var(--c-ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .detail__link:hover {
+    color: var(--c-accent);
+    border-color: var(--c-accent);
+  }
+
+  .detail__gallery {
+    margin-top: var(--sp-12);
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .detail__gallery--paysage {
+    align-items: start;
+  }
+  @media (min-width: 760px) {
+    .detail__gallery--paysage {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 560px) {
+    .detail__gallery--portrait {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (min-width: 1080px) {
+    .detail__gallery--portrait {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  .detail__figure {
+    display: grid;
+    gap: var(--sp-3);
+    margin: 0;
+  }
+  .detail__image {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-md);
+    background: var(--c-bg-elev);
+  }
+  .detail__caption {
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    color: var(--c-ink-muted);
+    text-align: center;
+  }
+</style>

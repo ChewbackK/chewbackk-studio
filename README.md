@@ -13,18 +13,35 @@ en production sur [chewbackk-studio.evanbouvier.fr](https://chewbackk-studio.eva
 ## Structure
 
 ```
-src/pages/
-├── index.astro                     # Accueil
-├── services.astro                  # Offre
-├── realisations.astro              # Liste des projets livrés
-├── realisations/
-│   ├── axel-mahe.astro             # Détail projet — portfolio Axel Mahé
-│   ├── chewcast.astro              # Détail projet — Chewcast
-│   └── portfolio-personnel.astro   # Détail projet — evanbouvier.fr
-├── contact.astro                   # Formulaire de contact (Web3Forms)
-├── mentions-legales.astro
-└── 404.astro
+src/
+├── content/projets/                # Une fiche Markdown par réalisation
+│   ├── axel-mahe.md
+│   ├── chewcast.md
+│   └── portfolio-personnel.md
+├── content.config.ts               # Schéma des fiches projet (champs, formats)
+├── components/                     # Navbar, Footer, Seo, hero, PageHead, CtaSection...
+├── styles/                         # tokens, globals, effects, components (boutons)
+└── pages/
+    ├── index.astro                 # Accueil
+    ├── services.astro              # Offre
+    ├── realisations.astro          # Liste des projets (générée depuis les fiches)
+    ├── realisations/[slug].astro   # Page de détail, une par fiche
+    ├── contact.astro               # Formulaire de contact (Web3Forms)
+    ├── mentions-legales.astro
+    └── 404.astro
 ```
+
+## Ajouter un projet
+
+1. Déposer les visuels dans `src/assets/` : un aperçu pour la carte (`src/assets/previews/`)
+   et les captures de la galerie (`src/assets/gallery/<projet>/`).
+2. Copier une fiche existante de `src/content/projets/` sous le nom voulu : `mon-projet.md`
+   donnera l'URL `/realisations/mon-projet/`.
+3. Remplir le frontmatter (nom, ordre, `client` ou `perso`, tags, résumé, meta description,
+   aperçu, galerie) et écrire la description longue en Markdown sous le frontmatter.
+
+`npm run build` signale tout champ manquant ou mal formé (rôle absent pour un projet client,
+meta description de plus de 155 caractères, image introuvable...).
 
 ## Commandes
 

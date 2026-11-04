@@ -1,0 +1,63 @@
+---
+/**
+ * PageHead.astro - en-tête des pages internes (Services, Réalisations,
+ * Contact, 404) : pastille d'index + libellé en mono, titre XXL, puis une
+ * accroche passée dans le slot par défaut.
+ */
+interface Props {
+  /** Texte de la pastille (ex. "02", "404"). */
+  idx: string;
+  /** Libellé à côté de la pastille (ex. "Services"). */
+  label: string;
+  title: string;
+}
+const { idx, label, title } = Astro.props;
+---
+
+<section class="page-head">
+  <div class="container">
+    <p class="page-head__eyebrow">
+      <span class="page-head__idx">{idx}</span>
+      {label}
+    </p>
+    <h1 class="page-head__title">{title}</h1>
+    <p class="page-head__pitch"><slot /></p>
+  </div>
+</section>
+
+<style>
+  .page-head {
+    padding-block: var(--section-pad) var(--sp-8);
+  }
+  .page-head__eyebrow {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    font-family: var(--font-mono);
+    font-size: var(--fs-step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--c-ink-muted);
+    margin-bottom: var(--sp-6);
+  }
+  .page-head__idx {
+    color: var(--c-ink);
+    border: 1px solid var(--c-line);
+    border-radius: var(--r-sm);
+    padding: 0.1em 0.5em;
+    letter-spacing: 0.1em;
+  }
+  .page-head__title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    font-size: clamp(2.2rem, 1.4rem + 3.4vw, 4.2rem);
+    margin: 0;
+  }
+  .page-head__pitch {
+    margin-top: var(--sp-4);
+    max-width: 56ch;
+    font-size: var(--fs-step-1);
+    color: var(--c-ink-muted);
+  }
+</style>
