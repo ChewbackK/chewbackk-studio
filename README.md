@@ -5,9 +5,10 @@ en production sur [chewbackk-studio.evanbouvier.fr](https://chewbackk-studio.eva
 
 ## Stack
 
-- [Astro](https://astro.build) (statique, `output: 'static'`)
+- [Astro 7](https://astro.build) (statique, `output: 'static'`), Node >= 22.23.4
 - GSAP + Lenis pour les animations/scroll
-- MDX (`@astrojs/mdx`) + sitemap (`@astrojs/sitemap`)
+- Sitemap (`@astrojs/sitemap`)
+- Dépendances et actions GitHub tenues à jour par Dependabot (`.github/dependabot.yml`)
 
 ## Structure
 
