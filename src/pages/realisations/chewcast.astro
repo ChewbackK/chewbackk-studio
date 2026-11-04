@@ -24,6 +24,10 @@ const tags = ["Express", "SQLite", "PWA"];
 const desc =
   "Chewcast est une PWA auto-hébergée (Express + SQLite) pensée pour la pêche au lancer, à la fois en préparation et sur le terrain. L'accueil résume la prochaine session planifiée et donne un accès rapide aux quatre sections de l'app. Le catalogue de spots recense des postes de pêche réels du sud Bretagne (accès, structures, espèces ciblées, niveau de difficulté). La planification de session est un formulaire en plusieurs étapes (choix du spot, horaires, espèces ciblées) qui s'appuie sur des données marée/météo récupérées automatiquement, et la section Référence embarque une base réglementaire 2026 (tailles minimales, quotas) ainsi que des guides pratiques (leurres, nœuds, théorie des marées).";
 const url: string | null = "https://chewcast.evanbouvier.fr";
+// Meta description dédiée (< 155 caractères, longueur affichée par Google) :
+// `desc`, bien plus long, reste le texte de la page.
+const seoDescription =
+  "Chewcast, app de pêche au lancer (PWA, Express, SQLite) : spots du sud Bretagne, sessions planifiées selon marées et météo, réglementation 2026.";
 
 const images = [
   {
@@ -49,7 +53,7 @@ const images = [
 ];
 ---
 
-<BaseLayout title={`${name} - Chewbackk Studio`} description={desc}>
+<BaseLayout title={`${name} - Chewbackk Studio`} description={seoDescription}>
   <section class="detail">
     <div class="container">
       <a class="detail__back" href="/realisations">&larr; Retour aux réalisations</a>

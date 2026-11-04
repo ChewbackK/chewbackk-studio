@@ -28,6 +28,10 @@ const tags = ["Front uniquement"];
 const desc =
   "Portfolio cinéma : design sombre, galerie de films. Le site s'ouvre sur une amorce de pellicule façon SMPTE (décompte, repères de ratio 1.33/1.85/2.39:1) avant de révéler un hero typographique signé \"AXEL Mahé\", puis une galerie de courts-métrages présentés en fiches détaillées (rôle, format, étalonnage, stills de tournage) — dont \"DYKA\", tourné en Cinémascope. Le site distingue aussi les projets annexes (\"Contact sheet\" : covers, courts perso, collaborations techniques) et l'engagement associatif (radio étudiante Ramdam, événements filmés) sur des pages au thème clair contrastant avec le noir du reste du site. L'ensemble assume une direction artistique cohérente autour du vocabulaire technique du cinéma (REC, TIMECODE, SCÈNE, GRADE).";
 const url = "https://axel-mahe.netlify.app";
+// Meta description dédiée (< 155 caractères, longueur affichée par Google) :
+// `desc`, bien plus long, reste le texte de la page.
+const seoDescription =
+  "Portfolio d'Axel Mahé, étudiant réalisateur : univers cinéma, galerie de courts-métrages et pages associatives. Site réalisé par Chewbackk Studio.";
 
 const images = [
   {
@@ -53,7 +57,7 @@ const images = [
 ];
 ---
 
-<BaseLayout title={`${name} - Chewbackk Studio`} description={desc}>
+<BaseLayout title={`${name} - Chewbackk Studio`} description={seoDescription}>
   <section class="detail">
     <div class="container">
       <a class="detail__back" href="/realisations">&larr; Retour aux réalisations</a>
