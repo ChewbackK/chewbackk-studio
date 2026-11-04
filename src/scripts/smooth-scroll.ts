@@ -1,14 +1,14 @@
 /**
  * smooth-scroll.ts - cycle de vie du smooth-scroll (Lenis) et des reveals (GSAP).
  *
- * Contraintes Astro 6 + ClientRouter :
+ * Contraintes Astro + ClientRouter :
  *  - Un <script> hoisté ne se rejoue PAS après une navigation client. On
  *    n'attache donc qu'un écouteur `astro:page-load` (qui couvre aussi le
  *    premier chargement) et c'est lui qui (re)construit tout.
  *  - `init()` commence par `tearDown()` → idempotent : jamais deux instances
  *    Lenis ni deux boucles RAF, même si l'événement se déclenche plusieurs fois.
- *  - On n'utilise PAS les événements `astro:before-swap`/`after-swap`
- *    (dépréciés, retirés dans Astro 7) ; le teardown-avant-init suffit.
+ *  - Pas besoin d'écouter `astro:before-swap`/`astro:after-swap` : le
+ *    teardown-avant-init suffit.
  */
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";

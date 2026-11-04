@@ -1,6 +1,6 @@
 # Aperçus de la page réalisations
 
-Fichiers utilisés par `src/pages/realisations.astro`. Générés le 01/08/2026 via `ffmpeg` (vidéo/images) et Playwright + Chrome (captures d'écran) — aucun des deux n'est une dépendance déclarée du projet (`package.json`), ce sont des outils ponctuels utilisés hors du tooling du repo.
+Aperçus des cartes de /realisations, référencés par les fiches `src/content/projets/*.md` (champ `preview`). Générés le 01/08/2026 via `ffmpeg` (vidéo/images) et Playwright + Chrome (captures d'écran) — aucun des deux n'est une dépendance déclarée du projet (`package.json`), ce sont des outils ponctuels utilisés hors du tooling du repo.
 
 ## `axel-mahe-preview.webm` / `.mp4` / `axel-mahe-poster.jpg`
 

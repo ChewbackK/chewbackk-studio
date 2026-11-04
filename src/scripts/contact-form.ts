@@ -20,6 +20,11 @@ let projectType: HTMLSelectElement | null = null;
 let budgetInput: HTMLInputElement | null = null;
 let onProjectTypeChange: (() => void) | null = null;
 let onBudgetInput: (() => void) | null = null;
+/** Remet le curseur de budget à son état initial (désactivé), après envoi. */
+let resetBudget: (() => void) | null = null;
+
+/** Valeur transmise tant que le visiteur n'a pas touché au curseur. */
+const BUDGET_NOT_SET = "Non précisé";
 
 function setStatus(statusEl: HTMLElement, message: string, kind: "sending" | "success" | "error" | ""): void {
   statusEl.textContent = message;
@@ -44,6 +49,7 @@ async function handleSubmit(form: HTMLFormElement, statusEl: HTMLElement, submit
   if (String(data.get("company") ?? "").trim() !== "") {
     setStatus(statusEl, "Merci, votre demande a bien été envoyée.", "success");
     form.reset();
+    resetBudget?.();
     return;
   }
 
@@ -63,7 +69,7 @@ async function handleSubmit(form: HTMLFormElement, statusEl: HTMLElement, submit
     name: data.get("name"),
     email: data.get("email"),
     project_type: data.get("project_type"),
-    budget: data.get("budget"),
+    budget: data.get("budget") || BUDGET_NOT_SET,
     timeline: data.get("timeline"),
     message: data.get("message"),
   };
@@ -81,6 +87,7 @@ async function handleSubmit(form: HTMLFormElement, statusEl: HTMLElement, submit
     if (json.success) {
       setStatus(statusEl, "Merci, votre demande a bien été envoyée. Réponse sous 48 h.", "success");
       form.reset();
+      resetBudget?.();
     } else {
       setStatus(statusEl, "L'envoi a échoué. Réessayez, ou écrivez directement à bouvierevan-contact@proton.me.", "error");
     }
@@ -101,6 +108,7 @@ function teardown(): void {
   budgetInput = null;
   onProjectTypeChange = null;
   onBudgetInput = null;
+  resetBudget = null;
 }
 
 function init(): void {
@@ -130,11 +138,25 @@ function init(): void {
   const budgetMaxEl = form.querySelector<HTMLElement>("[data-budget-max]");
 
   if (projectType && budgetInput && budgetHidden && budgetValueEl && budgetMinEl && budgetMaxEl) {
-    const refreshValue = (): void => {
-      if (!budgetInput || budgetInput.disabled) return;
-      const label = budgetLabel(budgetInput);
-      budgetValueEl.textContent = label;
+    const input = budgetInput;
+
+    // Le budget n'est transmis que si le visiteur a bougé le curseur : avant,
+    // sa position de départ partait dans la demande comme un vrai choix
+    // (« Jusqu'à 300 € » reçu par défaut). aria-valuetext donne aux lecteurs
+    // d'écran la valeur lisible plutôt que le nombre brut du curseur.
+    const showBudget = (label: string, hint?: string): void => {
+      budgetValueEl.textContent = hint ?? label;
       budgetHidden.value = label;
+      input.setAttribute("aria-valuetext", label);
+    };
+
+    const disableBudget = (): void => {
+      input.disabled = true;
+      input.removeAttribute("aria-valuetext");
+      budgetMinEl.textContent = "-";
+      budgetMaxEl.textContent = "-";
+      budgetValueEl.textContent = "Choisissez d'abord un type de projet.";
+      budgetHidden.value = "";
     };
 
     onProjectTypeChange = () => {
@@ -143,26 +165,28 @@ function init(): void {
       const max = Number(opt?.dataset.optBudgetMax);
       const step = Number(opt?.dataset.optBudgetStep);
       if (!opt?.value || Number.isNaN(min) || Number.isNaN(max) || Number.isNaN(step)) {
-        budgetInput!.disabled = true;
-        budgetMinEl.textContent = "-";
-        budgetMaxEl.textContent = "-";
-        budgetValueEl.textContent = "Choisissez d'abord un type de projet.";
-        budgetHidden.value = "";
+        disableBudget();
         return;
       }
-      budgetInput!.disabled = false;
-      budgetInput!.min = String(min);
-      budgetInput!.max = String(max);
-      budgetInput!.step = String(step);
-      budgetInput!.value = String(min);
+      input.disabled = false;
+      input.min = String(min);
+      input.max = String(max);
+      input.step = String(step);
+      // Curseur au milieu de la fourchette : position neutre, qui ne suggère
+      // ni le minimum ni le maximum (et ne saute pas depuis l'état désactivé).
+      input.value = String(min + Math.round((max - min) / 2 / step) * step);
       budgetMinEl.textContent = formatEuro(min);
       budgetMaxEl.textContent = `${formatEuro(max)} et plus`;
-      refreshValue();
+      showBudget(BUDGET_NOT_SET, "Faites glisser le curseur pour indiquer un budget (facultatif).");
     };
     projectType.addEventListener("change", onProjectTypeChange);
 
-    onBudgetInput = refreshValue;
-    budgetInput.addEventListener("input", onBudgetInput);
+    onBudgetInput = () => {
+      if (!input.disabled) showBudget(budgetLabel(input));
+    };
+    input.addEventListener("input", onBudgetInput);
+
+    resetBudget = disableBudget;
   }
 }
 

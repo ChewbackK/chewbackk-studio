@@ -390,38 +390,7 @@
     gap: var(--sp-4);
   }
 
-  /* ---- Boutons ---- */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--sp-3) var(--sp-6);
-    border-radius: var(--r-sm);
-    font-weight: 700;
-    text-decoration: none;
-    transition:
-      transform var(--dur-fast) var(--ease-out),
-      box-shadow var(--dur) var(--ease-out),
-      background-color var(--dur-fast) var(--ease-out),
-      border-color var(--dur-fast) var(--ease-out);
-  }
-  .btn:hover {
-    transform: translateY(-2px);
-  }
-  .btn--cta {
-    background: var(--c-accent);
-    color: var(--c-accent-ink);
-  }
-  .btn--cta:hover {
-    box-shadow: 0 12px 34px -10px rgba(var(--c-accent-rgb), 0.55);
-  }
-  .btn--ghost {
-    border: 1px solid var(--c-line);
-    color: var(--c-ink);
-  }
-  .btn--ghost:hover {
-    border-color: var(--c-ink-muted);
-  }
+  /* Boutons : styles partagés dans src/styles/components.css. */
 
   @media (min-width: 900px) {
     .hero__row {

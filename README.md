@@ -5,25 +5,43 @@ en production sur [chewbackk-studio.evanbouvier.fr](https://chewbackk-studio.eva
 
 ## Stack
 
-- [Astro](https://astro.build) (statique, `output: 'static'`)
+- [Astro 7](https://astro.build) (statique, `output: 'static'`), Node >= 22.23.4
 - GSAP + Lenis pour les animations/scroll
-- MDX (`@astrojs/mdx`) + sitemap (`@astrojs/sitemap`)
+- Sitemap (`@astrojs/sitemap`)
+- Dépendances et actions GitHub tenues à jour par Dependabot (`.github/dependabot.yml`)
 
 ## Structure
 
 ```
-src/pages/
-├── index.astro                     # Accueil
-├── services.astro                  # Offre
-├── realisations.astro              # Liste des projets livrés
-├── realisations/
-│   ├── axel-mahe.astro             # Détail projet — portfolio Axel Mahé
-│   ├── chewcast.astro              # Détail projet — Chewcast
-│   └── portfolio-personnel.astro   # Détail projet — evanbouvier.fr
-├── contact.astro                   # Formulaire de contact (Web3Forms)
-├── mentions-legales.astro
-└── 404.astro
+src/
+├── content/projets/                # Une fiche Markdown par réalisation
+│   ├── axel-mahe.md
+│   ├── chewcast.md
+│   └── portfolio-personnel.md
+├── content.config.ts               # Schéma des fiches projet (champs, formats)
+├── components/                     # Navbar, Footer, Seo, hero, PageHead, CtaSection...
+├── styles/                         # tokens, globals, effects, components (boutons)
+└── pages/
+    ├── index.astro                 # Accueil
+    ├── services.astro              # Offre
+    ├── realisations.astro          # Liste des projets (générée depuis les fiches)
+    ├── realisations/[slug].astro   # Page de détail, une par fiche
+    ├── contact.astro               # Formulaire de contact (Web3Forms)
+    ├── mentions-legales.astro
+    └── 404.astro
 ```
+
+## Ajouter un projet
+
+1. Déposer les visuels dans `src/assets/` : un aperçu pour la carte (`src/assets/previews/`)
+   et les captures de la galerie (`src/assets/gallery/<projet>/`).
+2. Copier une fiche existante de `src/content/projets/` sous le nom voulu : `mon-projet.md`
+   donnera l'URL `/realisations/mon-projet/`.
+3. Remplir le frontmatter (nom, ordre, `client` ou `perso`, tags, résumé, meta description,
+   aperçu, galerie) et écrire la description longue en Markdown sous le frontmatter.
+
+`npm run build` signale tout champ manquant ou mal formé (rôle absent pour un projet client,
+meta description de plus de 155 caractères, image introuvable...).
 
 ## Commandes
 
@@ -32,7 +50,13 @@ npm install
 npm run dev       # http://localhost:4321
 npm run build     # Production → dist/
 npm run preview   # Preview du build
+npm test          # Tests Playwright sur le build (lancer npm run build avant)
 ```
+
+Les tests (`tests/`) tournent aussi en CI à chaque PR : chargement des 9 pages sans erreur,
+accessibilité WCAG A/AA (axe), absence de débordement horizontal (jusqu'à 320 px), hero et
+menu mobile, formulaire de devis (envoi intercepté, rien n'est réellement envoyé) et budget
+de 200 Ko de JavaScript par page. Première exécution en local : `npx playwright install chromium`.
 
 ## Déploiement
 

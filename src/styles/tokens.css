@@ -38,7 +38,6 @@
   --fs-step-1: clamp(1.2rem, 1.05rem + 0.6vw, 1.5rem);
   --fs-step-2: clamp(1.5rem, 1.2rem + 1.2vw, 2.1rem);  /* tagline */
   --fs-step-3: clamp(2.2rem, 1.5rem + 3vw, 3.6rem);
-  --fs-display: clamp(2.8rem, 1.6rem + 6vw, 6rem);     /* titre hero */
 
   --lh-tight: 1.05; /* display */
   --lh-snug: 1.25;
@@ -80,9 +79,6 @@
   --ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
 
   /* ---- Profondeur (z-index) ---- */
-  --z-canvas: 0;
-  --z-scrim: 1;
-  --z-content: 2;
   --z-nav: 50;
   --z-skip: 100;
 }

@@ -6,9 +6,10 @@
  * disque autour du pointeur. Interpolation (lerp) pour un suivi fluide.
  *
  * Garde-fous (cohérents avec le reste du projet) :
- *  - Seulement sur pointeur fin (souris) : au tactile/clavier c'est le bouton
- *    « Voir le plan » (géré par blueprint.ts) qui révèle le plan entier.
- *  - reduced-motion : pas de suivi (le plan reste accessible via le bouton).
+ *  - Seulement sur pointeur fin (souris) : au tactile/clavier, la couche
+ *    détaillée reste masquée (le plan complet n'est dévoilé que par le lien
+ *    profond #plan, géré par blueprint.ts).
+ *  - reduced-motion : pas de suivi.
  *  - rAF en pause hors-vue (IntersectionObserver) et onglet caché.
  *  - Idempotent, (ré)initialisé sur `astro:page-load` ; teardown complet.
  */

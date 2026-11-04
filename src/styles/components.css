@@ -1,0 +1,55 @@
+/* components.css - styles de composants partagés par plusieurs pages.
+   Les boutons étaient redéfinis dans 5 fichiers, avec des survols différents
+   d'une page à l'autre : une seule définition ici. Le markup reste un simple
+   <a class="btn btn--cta"> (ou <button>), ce qui garde les sélecteurs
+   locaux comme `.hero__actions .btn` et la mesure du CTA par blueprint.ts. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-3) var(--sp-6);
+  border: none;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-step-0);
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+.btn:hover {
+  transform: translateY(-2px);
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Couleurs répétées sur :hover : `a:hover` (globals.css) passe sinon le
+   texte en vert, invisible sur le fond vert du CTA. */
+.btn--cta,
+.btn--cta:hover {
+  background: var(--c-accent);
+  color: var(--c-accent-ink);
+}
+.btn--cta:hover:not(:disabled) {
+  box-shadow: 0 12px 34px -10px rgba(var(--c-accent-rgb), 0.55);
+}
+
+.btn--ghost,
+.btn--ghost:hover {
+  color: var(--c-ink);
+}
+.btn--ghost {
+  border: 1px solid var(--c-line);
+  background: transparent;
+}
+.btn--ghost:hover {
+  border-color: var(--c-ink-muted);
+}

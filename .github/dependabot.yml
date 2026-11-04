@@ -1,0 +1,29 @@
+# Mises à jour automatiques des dépendances (npm) et des actions GitHub.
+# Une PR groupée par semaine pour limiter le bruit ; la CI tourne dessus
+# avant toute fusion. Les montées de version majeures arrivent à part, car
+# elles demandent une vérification manuelle (cf. migration Astro 6 -> 7).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      dependances-mineures:
+        update-types: [minor, patch]
+    ignore:
+      # @astrojs/check ne supporte que TypeScript 5 et 6 : une PR TypeScript 7
+      # casserait `astro check`. À retirer quand @astrojs/check l'acceptera.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      actions:
+        patterns: ["*"]

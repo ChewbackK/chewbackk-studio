@@ -1,0 +1,47 @@
+---
+/**
+ * CtaSection.astro - bloc d'appel à l'action de fin de page (Services, 404) :
+ * titre, texte (slot par défaut) et boutons (slot "actions").
+ *
+ * Le max-width est posé sur le bloc intérieur, pas sur le .container : sinon
+ * le margin-inline: auto du container centre le bloc, qui se décale par
+ * rapport au reste du contenu aligné à gauche.
+ */
+interface Props {
+  title: string;
+}
+const { title } = Astro.props;
+---
+
+<section class="cta">
+  <div class="container">
+    <div class="cta__inner">
+      <h2>{title}</h2>
+      <p><slot /></p>
+      <div class="cta__actions"><slot name="actions" /></div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .cta {
+    padding-block: var(--sp-8) var(--section-pad);
+    border-top: 1px solid var(--c-line);
+  }
+  .cta__inner {
+    max-width: 40rem;
+  }
+  .cta__inner h2 {
+    font-size: var(--fs-step-2);
+    margin: 0 0 var(--sp-3);
+  }
+  .cta__inner p {
+    color: var(--c-ink-muted);
+    margin: 0 0 var(--sp-6);
+  }
+  .cta__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-4);
+  }
+</style>

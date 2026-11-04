@@ -149,7 +149,7 @@ html.is-menu-open {
 
 /* ---- Reduced-motion : source de vérité côté CSS ----
    Neutralise transitions/animations AVANT même que le JS ne tourne, pour
-   éviter tout flash de contenu masqué. Le JS (Lenis/canvas/GSAP) honore la
+   éviter tout flash de contenu masqué. Le JS (Lenis/GSAP) honore la
    même préférence de son côté. */
 @media (prefers-reduced-motion: reduce) {
   *,

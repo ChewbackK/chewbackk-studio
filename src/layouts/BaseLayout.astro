@@ -9,10 +9,12 @@ import Seo from "../components/Seo.astro";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
 
-// L'ordre importe : tokens (variables) → globals (base) → effects (classes).
+// L'ordre importe : tokens (variables) → globals (base) → effects (classes)
+// → components (boutons partagés).
 import "../styles/tokens.css";
 import "../styles/globals.css";
 import "../styles/effects.css";
+import "../styles/components.css";
 
 interface Props {
   title?: string;

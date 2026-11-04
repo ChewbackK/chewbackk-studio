@@ -31,6 +31,8 @@ const ogImageUrl = ogImage ? new URL(ogImage, Astro.site).href : undefined;
 // Identité structurée (schema.org) : reprend uniquement les faits déjà
 // publics sur /mentions-legales et /contact. Pas de note, d'avis, d'horaires
 // ni de téléphone : ces informations n'existent pas ailleurs sur le site.
+// Adresse volontairement réduite à la commune (référencement local sur
+// Hennebont) : la rue n'est pas exposée ici.
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
@@ -39,6 +41,11 @@ const structuredData = {
     "Développement web sur mesure : sites, applications et automatisations, par un développeur freelance.",
   url: Astro.site?.href,
   email: "bouvierevan-contact@proton.me",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Hennebont",
+    addressCountry: "FR",
+  },
   founder: {
     "@type": "Person",
     name: "Evan Bouvier",
