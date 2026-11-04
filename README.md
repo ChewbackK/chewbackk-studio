@@ -50,7 +50,13 @@ npm install
 npm run dev       # http://localhost:4321
 npm run build     # Production → dist/
 npm run preview   # Preview du build
+npm test          # Tests Playwright sur le build (lancer npm run build avant)
 ```
+
+Les tests (`tests/`) tournent aussi en CI à chaque PR : chargement des 9 pages sans erreur,
+accessibilité WCAG A/AA (axe), absence de débordement horizontal (jusqu'à 320 px), hero et
+menu mobile, formulaire de devis (envoi intercepté, rien n'est réellement envoyé) et budget
+de 200 Ko de JavaScript par page. Première exécution en local : `npx playwright install chromium`.
 
 ## Déploiement
 
